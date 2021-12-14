@@ -1,0 +1,7 @@
+c(my_timer).
+
+my_timer:start().
+
+my_timer:stop().
+
+h().
