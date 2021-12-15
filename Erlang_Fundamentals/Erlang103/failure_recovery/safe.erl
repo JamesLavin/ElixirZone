@@ -5,7 +5,7 @@
          create_backup1_unless_exists/0, create_backup1/1,
 	 create_backup_unless_exists/1, create_backup_unless_exists/2, send_with_retries/5]).
 
--num_backups(1).
+-num_backups(2).
 
 % Client command to launch safe, which will launch its own backup1
 start() ->
@@ -25,10 +25,10 @@ start_counter_loop() ->
   send_with_retries(Backup1Pid, {state_request, self()}, 5, 1000, 5000),  % e.g., backup1 ! {state_request, self()},
   receive
     {current_state, Count} ->
-      io:format("~p start_counter_loop received current_state update of ~p~n", [?MODULE, Count]),
+      io:format("~p (PID: ~p) start_counter_loop received current_state update of ~p~n", [?MODULE, self(), Count]),
       counter_loop({Backup1Pid, Backup1Ref}, Count);
     {'DOWN', Backup1Ref, process, Backup1Pid, _Reason} ->
-      io:format("~p received DOWN message for ~p (~p) BEFORE counter_loop~n", [?MODULE, backup1, Backup1Pid]),
+      io:format("~p (PID: ~p) received DOWN message for ~p (~p) BEFORE counter_loop~n", [?MODULE, self(), backup1, Backup1Pid]),
       start_counter_loop()
   end.
 
@@ -49,7 +49,7 @@ counter_loop({Backup1Pid, Backup1Ref}, Count) ->
   end,
   IncrementedCount = Count + 1,
   create_or_update_backup(backup1, IncrementedCount),
-  io:format("Count is now ~p~n", [IncrementedCount]),
+  io:format("Count in ~p (PID: ~p) is now ~p~n", [?MODULE, self(), IncrementedCount]),
   counter_loop({Backup1Pid, Backup1Ref}, IncrementedCount).
 
 % Each process monitors another process:
@@ -69,7 +69,7 @@ start_backup_loop({BackupNum, Count}) ->
        {MyBackupPid, MyBackupRef} = create_backup_unless_exists(BackupNum + 1, Count);
      BackupNum == NumBackups ->
        % I am the last backup, so my responsibility is monitoring the main process, safe
-       io:format("~p is calling monitor_main_loop~n", [self()]),
+       io:format("Last backup (PID: ~p) is calling monitor_main_loop~n", [self()]),
        {MyBackupPid, MyBackupRef} = monitor_main_loop();
      true ->
        MyBackupRef = nil,
