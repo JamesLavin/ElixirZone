@@ -1,4 +1,4 @@
-reversible
+Divisible
 =====
 
 An OTP library

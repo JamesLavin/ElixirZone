@@ -1,3 +1,0 @@
--module(reversible).
-
--export([]).
