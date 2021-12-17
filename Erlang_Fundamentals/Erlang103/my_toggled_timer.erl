@@ -32,9 +32,12 @@ maybe_schedule_next_tick(State) ->
   State.
 
 start() ->
-  State = #{display => true, next_tick_ref => nil},
+  State = initial_state(),
   Pid = spawn(fun() -> display("Timer has started"), loop(State) end), 
   register(my_timer, Pid).
+
+initial_state() ->
+  #{display => true, next_tick_ref => nil}.
 
 stop() ->
   exit(whereis(my_timer), kill).

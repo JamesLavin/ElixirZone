@@ -1,4 +1,4 @@
--module(prop_reversibility).
+-module(prop_divisibility).
 -include_lib("proper/include/proper.hrl").
 
 %%%%%%%%%%%%%%%%%%

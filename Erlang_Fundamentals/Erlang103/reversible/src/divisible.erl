@@ -1,3 +1,3 @@
--module(diversible).
+-module(divisible).
 
 -export([]).
