@@ -69,8 +69,8 @@ start_backup_loop({BackupNum, Count}) ->
        {MyBackupPid, MyBackupRef} = create_backup_unless_exists(BackupNum + 1, Count);
      BackupNum == NumBackups ->
        % I am the last backup, so my responsibility is monitoring the main process, safe
-       io:format("Last backup (PID: ~p) is calling monitor_main_loop~n", [self()]),
-       {MyBackupPid, MyBackupRef} = monitor_main_loop();
+       io:format("Last backup (PID: ~p) is calling monitor_safe~n", [self()]),
+       {MyBackupPid, MyBackupRef} = monitor_safe();
      true ->
        MyBackupRef = nil,
        MyBackupPid = nil
@@ -108,14 +108,14 @@ backup_loop({MyBackupPid, MyBackupRef}, {BackupNum, Count}) ->
       end
   end.
 
-monitor_main_loop() ->
-  MyBackupPid = whereis(safe),
-  AlreadyExists = is_pid(MyBackupPid),
+monitor_safe() ->
+  SafePid = whereis(safe),
+  AlreadyExists = is_pid(SafePid),
   if
     AlreadyExists ->
-      MyBackupRef = monitor(process, MyBackupPid),
-      io:format("Last backup (~p) is monitoring main loop~n", [self()]),
-      {MyBackupPid, MyBackupRef};
+      SafeRef = monitor(process, SafePid),
+      io:format("Last backup (~p) is monitoring safe (~p)~n", [self(), SafePid]),
+      {SafePid, SafeRef};
     true ->
       ok
   end.
