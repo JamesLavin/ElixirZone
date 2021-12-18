@@ -41,8 +41,8 @@ counter_loop({Backup1Pid, Backup1Ref}, Count) ->
       io:format("~p counter received DOWN message for ~p (~p)~n", [self(), backup1, Backup1Pid]),
       {NewBackup1Pid, NewBackup1Ref} = create_backup1(Count),
       counter_loop({NewBackup1Pid, NewBackup1Ref}, Count);
-    _Other ->
-      io:format("Counter received unexpected message~n", [])
+    Other ->
+      io:format("Counter received unexpected message: ~p~n", [Other])
   after 1000 ->
       ok
       % io:format("backup1 Pid: ~p~n", [whereis(backup1)])
