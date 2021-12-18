@@ -1,0 +1,9 @@
+c(my_toggled_timer).
+
+my_toggled_timer:start().
+
+my_toggled_timer:toggle().
+
+my_toggled_timer:toggle().
+
+my_toggled_timer:stop().
