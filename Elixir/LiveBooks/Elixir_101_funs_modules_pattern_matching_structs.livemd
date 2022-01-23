@@ -12,6 +12,7 @@ asdf: Extendable version manager with support for Ruby, Node.js, Elixir, Erlang 
 
 * https://github.com/asdf-vm/asdf
 * https://asdf-vm.com/guide/getting-started.html
+* Linux + Mac... NOT Windows
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -206,25 +207,33 @@ G.greet(:best_friend) |> IO.inspect()
 ## Maps & Structs
 
 ```elixir
-bird = %{fname: "Larry", lname: "Bird", number: 33, position: :forward}
+defmodule CelticsPlayers do
+  def bird, do: %{fname: "Larry", lname: "Bird", number: 33, position: :forward}
+  def parish, do: %{fname: "Robert", lname: "Parish", number: 0, position: :center}
+  def ainge, do: %{fname: "Danny", lname: "Ainge", number: 44, position: :guard}
+  def johnson, do: %{fname: "Dennis", lname: "Johnson", number: 3, position: :guard}
+  def mchale, do: %{fname: "Kevin", lname: "McHale", number: 32, position: :forward}
+  def walton, do: %{fname: "Bill", lname: "Walton", number: 5, position: :center}
+
+  def players, do: [bird(), parish(), ainge(), johnson(), mchale(), walton()]
+end
+
+CelticsPlayers.bird()
 ```
 
 ```elixir
-parish = %{fname: "Robert", lname: "Parish", number: 0, position: :center}
-ainge = %{fname: "Danny", lname: "Ainge", number: 44, position: :guard}
-johnson = %{fname: "Dennis", lname: "Johnson", number: 3, position: :guard}
-mchale = %{fname: "Kevin", lname: "McHale", number: 32, position: :forward}
-walton = %{fname: "Bill", lname: "Walton", number: 5, position: :center}
-```
+defmodule Celtics do
+  import CelticsPlayers
 
-```elixir
-players = [bird, parish, ainge, johnson, mchale, walton]
+  def team,
+    do: %{
+      forwards: players() |> Enum.filter(&(&1.position == :forward)),
+      centers: players() |> Enum.filter(&(&1.position == :center)),
+      guards: players() |> Enum.filter(&(&1.position == :guard))
+    }
+end
 
-celtics = %{
-  forwards: players |> Enum.filter(&(&1.position == :forward)),
-  centers: players |> Enum.filter(&(&1.position == :center)),
-  guards: players |> Enum.filter(&(&1.position == :guard))
-}
+Celtics.team()
 ```
 
 ```elixir
@@ -236,13 +245,21 @@ defmodule Player do
   defstruct [:fname, :lname, :number, :position]
 end
 
-struct_players = players |> Enum.map(&struct(Player, &1))
+defmodule StructCeltics do
+  import CelticsPlayers
 
-celtics = %{
-  forwards: struct_players |> Enum.filter(&(&1.position == :forward)),
-  centers: struct_players |> Enum.filter(&(&1.position == :center)),
-  guards: struct_players |> Enum.filter(&(&1.position == :guard))
-}
+  # @players players()
+  @struct_players players() |> Enum.map(&struct(Player, &1))
+
+  def team,
+    do: %{
+      forwards: @struct_players |> Enum.filter(&(&1.position == :forward)),
+      centers: @struct_players |> Enum.filter(&(&1.position == :center)),
+      guards: @struct_players |> Enum.filter(&(&1.position == :guard))
+    }
+end
+
+StructCeltics.team()
 ```
 
 ```elixir
@@ -254,13 +271,39 @@ bob = %Player{fname: "Bob"}
 ```elixir
 # https://hexdocs.pm/elixir/1.13/Map.html
 
-# struct_players = players |> Enum.map(&(struct(Player, &1) |> Map.put(:team, :celtics)))
-struct_players =
-  players |> Enum.map(&struct(Player, &1)) |> Enum.map(&Map.put(&1, :team, :celtics))
+defmodule StructCeltics do
+  import CelticsPlayers
 
-celtics = %{
-  forwards: struct_players |> Enum.filter(&(&1.position == :forward)),
-  centers: struct_players |> Enum.filter(&(&1.position == :center)),
-  guards: struct_players |> Enum.filter(&(&1.position == :guard))
-}
+  # @struct_players players() |> Enum.map(&(struct(Player, &1) |> Map.put(:team, :celtics)))
+  @struct_players players()
+                  |> Enum.map(&struct(Player, &1))
+                  |> Enum.map(&Map.put(&1, :team, :celtics))
+
+  def team,
+    do: %{
+      forwards: @struct_players |> Enum.filter(&(&1.position == :forward)),
+      centers: @struct_players |> Enum.filter(&(&1.position == :center)),
+      guards: @struct_players |> Enum.filter(&(&1.position == :guard))
+    }
+end
+
+StructCeltics.team()
+```
+
+## Testing
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule TestCeltics do
+  use ExUnit.Case, async: true
+
+  test "McHale is an '85-86 Celtic" do
+    players = celtics[:forwards] ++ celtics[:centers] ++ celtics[:guards]
+    kevin = %Player{lname: "McHale", fname: "Kevin"}
+    assert in celtics
+  end
+end
+
+ExUnit.run()
 ```
