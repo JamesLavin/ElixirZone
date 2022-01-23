@@ -109,7 +109,7 @@ another_add_7 = &(&1 + 7)
 another_add_7.(8)
 ```
 
-## Moodules & named functions
+## Modules & named functions
 
 ```elixir
 defmodule MyModule do
