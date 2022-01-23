@@ -8,6 +8,13 @@
 
 <!-- livebook:{"break_markdown":true} -->
 
+asdf: Extendable version manager with support for Ruby, Node.js, Elixir, Erlang & more
+
+* https://github.com/asdf-vm/asdf
+* https://asdf-vm.com/guide/getting-started.html
+
+<!-- livebook:{"break_markdown":true} -->
+
 ![livebook.dev.png](images/livebook.dev.png)
 
 <!-- livebook:{"break_markdown":true} -->
