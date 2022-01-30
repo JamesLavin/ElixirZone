@@ -1,10 +1,24 @@
-# MyVal
+# MyVal (version 4: add @spec-based and @type-based tests)
 
-## Section
+## Documentation on @types, @specs, StreamData, & TypeCheck
 
-* https://github.com/Qqwy/elixir-type_check
+Types & Specs:
+
+* https://hexdocs.pm/elixir/typespecs.html
 * https://elixir-lang.org/getting-started/typespecs-and-behaviours.html
 * https://hexdocs.pm/elixir/1.13.2/typespecs.html
+
+StreamData:
+
+* https://hexdocs.pm/stream_data/StreamData.html
+* https://elixirschool.com/en/lessons/libraries/stream-data/
+* https://github.com/whatyouhide/stream_data
+
+TypeCheck:
+
+* https://github.com/Qqwy/elixir-type_check
+* https://hexdocs.pm/type_check/readme.html
+* https://hexdocs.pm/type_check/type-checking-and-spec-testing-with-typecheck.html
 
 ```elixir
 Mix.install([
@@ -12,6 +26,8 @@ Mix.install([
   {:stream_data, "~> 0.5.0"}
 ])
 ```
+
+## Modify @types because TypeCheck didn't like named types inside other named types
 
 ```elixir
 defmodule MyVal do
@@ -262,6 +278,8 @@ MyVal.new("a")
 |> MyVal.val()
 ```
 
+## More tests
+
 ```elixir
 %MyVal{history: [{nil, {:+, 99}}]}
 |> MyVal.val()
@@ -332,6 +350,8 @@ end
 
 ExUnit.run()
 ```
+
+## Generate test data for property-based tests using TypeCheck & StreamData
 
 ```elixir
 defmodule MyValTest2 do
