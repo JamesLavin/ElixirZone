@@ -1,10 +1,24 @@
-# MyVal
+# MyVal (version 2)
 
-## Section
+## Documentation on @types, @specs, StreamData, & TypeCheck
 
-* https://github.com/Qqwy/elixir-type_check
+Types & Specs:
+
+* https://hexdocs.pm/elixir/typespecs.html
 * https://elixir-lang.org/getting-started/typespecs-and-behaviours.html
 * https://hexdocs.pm/elixir/1.13.2/typespecs.html
+
+StreamData:
+
+* https://hexdocs.pm/stream_data/StreamData.html
+* https://elixirschool.com/en/lessons/libraries/stream-data/
+* https://github.com/whatyouhide/stream_data
+
+TypeCheck:
+
+* https://github.com/Qqwy/elixir-type_check
+* https://hexdocs.pm/type_check/readme.html
+* https://hexdocs.pm/type_check/type-checking-and-spec-testing-with-typecheck.html
 
 ```elixir
 Mix.install([
@@ -12,6 +26,8 @@ Mix.install([
   {:stream_data, "~> 0.5.0", only: :test}
 ])
 ```
+
+## Add functions to the MyVal module
 
 ```elixir
 defmodule MyVal do
@@ -116,6 +132,8 @@ defmodule MyVal do
 end
 ```
 
+## (Failed) attempt to get Elixir to display MyVal instances as just their current value
+
 ```elixir
 defimpl Inspect, for: MyVal do
   def inspect(my_val) do
@@ -141,6 +159,8 @@ end
 ```elixir
 String.Chars.impl_for([])
 ```
+
+## Use MyVal module
 
 ```elixir
 MyVal.new(-8)
