@@ -4,6 +4,8 @@
 
 * https://livebook.dev/
 * https://github.com/livebook-dev/livebook
+* [Livebook v0.5: flowcharts, chat apps, multiplayer games, and custom widgets!](https://www.youtube.com/watch?v=5tLsBwAjOo0)
+* https://github.com/livebook-dev/kino
 * https://mermaid-js.github.io/mermaid/#
 
 <!-- livebook:{"break_markdown":true} -->

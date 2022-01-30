@@ -1,0 +1,303 @@
+# MyVal
+
+## Section
+
+* https://github.com/Qqwy/elixir-type_check
+* https://elixir-lang.org/getting-started/typespecs-and-behaviours.html
+* https://hexdocs.pm/elixir/1.13.2/typespecs.html
+
+```elixir
+Mix.install([
+  {:type_check, "~> 0.10.0"},
+  {:stream_data, "~> 0.5.0", only: :test}
+])
+```
+
+```elixir
+defmodule MyVal do
+  use TypeCheck
+  defstruct [:history]
+
+  @type! my_val_ops :: :+ | :- | :* | :/ | nil
+  @type! my_val_entry :: {number(), {my_val_ops(), number()}} | {number(), {my_val_ops(), nil}}
+  # @type! my_val_initial_entry :: {number(), {nil, nil}}
+  # @type! my_val_subsequent_entry :: {number(), {my_val_ops(), number()}}
+  # @type! my_val_entry :: my_val_initial_entry() | my_val_subsequent_entry()
+  # @type! ordered_entry_list :: nonempty_list(my_val_initial_entry()) | nonempty_list(my_val_entry())
+  @type! ordered_entry_list :: nonempty_list(my_val_entry())
+  @type! t :: %MyVal{history: nonempty_list(my_val_entry())}
+
+  @spec! new(number()) :: %MyVal{}
+  def new(val), do: %MyVal{history: [{val, {nil, nil}}]}
+
+  @spec! val(t()) :: nil | number()
+  def val(%MyVal{history: []}), do: nil
+
+  def val(%MyVal{history: [{hd_val, {_hd_op, _hd_operand}} | _tl]}), do: hd_val
+
+  @spec! peek(t()) :: t()
+  def peek(%MyVal{history: [{hd_val, {_hd_op, _hd_operand}} | _tl]} = my_val) do
+    IO.inspect(hd_val, label: "current value of MyVal instance")
+    my_val
+  end
+
+  @spec! add(t(), number()) :: t()
+  def add(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    cur_val = my_val |> val()
+    %{my_val | history: [{cur_val + new_val, {:+, new_val}} | hist]}
+  end
+
+  @spec! subtract(t(), number()) :: t()
+  def subtract(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    cur_val = my_val |> val()
+    %{my_val | history: [{cur_val - new_val, {:-, new_val}} | hist]}
+  end
+
+  @spec! multiply(t(), number()) :: t()
+  def multiply(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    cur_val = my_val |> val()
+    %{my_val | history: [{cur_val * new_val, {:*, new_val}} | hist]}
+  end
+
+  @spec! divide(t(), number()) :: t()
+  def divide(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    cur_val = my_val |> val()
+    %{my_val | history: [{cur_val / new_val, {:/, new_val}} | hist]}
+  end
+
+  @spec! view(t()) :: %{val: number(), my_val: t()}
+  def view(%MyVal{history: _hist} = my_val) do
+    %{val: MyVal.val(my_val), my_val: my_val}
+  end
+
+  @spec! ordered_history(t()) :: ordered_entry_list()
+  def ordered_history(%MyVal{history: hist}) do
+    hist
+    |> Enum.reverse()
+  end
+
+  @spec! show_history(t()) :: list(String.t())
+  def show_history(%MyVal{history: _hist} = my_val) do
+    {{first, {nil, nil}}, rest} = first_rest(my_val)
+
+    rest
+    |> Enum.reduce(
+      ["#{first}"],
+      &stringify_next_line/2
+      # fn {val, {op, operand}}, acc -> ["#{op} #{operand} = #{val}" | acc] end
+    )
+    |> Enum.reverse()
+  end
+
+  @spec! show_history(t()) :: list(String.t())
+  def show_history2(%MyVal{history: hist}) do
+    hist
+    |> Enum.reverse()
+    |> Enum.reduce(
+      [],
+      &stringify_next_line/2
+      # fn {val, {op, operand}}, acc -> ["#{op} #{operand} = #{val}" | acc] end
+    )
+    |> Enum.reverse()
+  end
+
+  @spec! recalculate(t()) :: number()
+  def recalculate(%MyVal{history: _hist} = my_val) do
+    {{first, {nil, nil}}, rest} = first_rest(my_val)
+
+    Enum.reduce(rest, first, fn {_val, {op, operand}}, acc ->
+      apply(Kernel, op, [acc, operand])
+    end)
+  end
+
+  defp stringify_next_line({_val, {nil, nil}} = entry, acc) do
+    [stringify_entry(entry) | acc]
+  end
+
+  defp stringify_next_line({_val, {_op, _operand}} = entry, acc) do
+    [stringify_entry(entry) | acc]
+  end
+
+  defp stringify_entry({val, {nil, nil}}) do
+    "#{val}"
+  end
+
+  defp stringify_entry({val, {op, operand}}) do
+    "#{op} #{operand} = #{val}"
+  end
+
+  defp first_rest(%MyVal{history: _hist} = my_val) do
+    # Returns tuple with very first value and a list of all subsequent history:
+    #   {{first, {nil, nil}}, rest}
+    my_val
+    |> ordered_history()
+    |> List.pop_at(0)
+  end
+end
+```
+
+```elixir
+defimpl Inspect, for: MyVal do
+  def inspect(my_val) do
+    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
+    """
+    #{my_val |> MyVal.val()}
+    """
+  end
+end
+```
+
+```elixir
+defimpl String.Chars, for: MyVal do
+  def to_string(my_val) do
+    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
+    """
+    #{my_val |> MyVal.val()}
+    """
+  end
+end
+```
+
+```elixir
+String.Chars.impl_for([])
+```
+
+```elixir
+MyVal.new(-8)
+|> MyVal.add(11)
+|> MyVal.add(4)
+|> MyVal.add(8)
+|> MyVal.view()
+
+# |> (fn my_val -> %{val: MyVal.val(my_val), my_val: my_val} end).()
+# |> inspect()
+```
+
+```elixir
+MyVal.new(-8)
+|> MyVal.add(11)
+|> MyVal.add(4)
+|> MyVal.subtract(8)
+|> MyVal.add(11)
+|> MyVal.multiply(10)
+|> MyVal.subtract(10)
+|> MyVal.divide(10)
+|> MyVal.view()
+```
+
+```elixir
+MyVal.new(-8)
+|> MyVal.add(11)
+|> MyVal.add(4)
+|> MyVal.subtract(8)
+|> MyVal.add(11)
+|> MyVal.multiply(10)
+|> MyVal.subtract(10)
+|> MyVal.divide(10)
+|> MyVal.show_history()
+```
+
+```elixir
+MyVal.new(-8)
+|> MyVal.add(11)
+|> MyVal.add(4)
+|> MyVal.subtract(8)
+|> MyVal.add(11)
+|> MyVal.multiply(10)
+|> MyVal.subtract(10)
+|> MyVal.divide(10)
+|> MyVal.show_history2()
+```
+
+```elixir
+MyVal.new(-8)
+|> MyVal.add(11)
+|> MyVal.add(4)
+|> MyVal.subtract(8)
+|> MyVal.add(11)
+|> MyVal.multiply(10)
+|> MyVal.subtract(10)
+|> MyVal.divide(10)
+|> MyVal.ordered_history()
+```
+
+```elixir
+MyVal.new(88)
+|> MyVal.multiply(17)
+|> MyVal.add(1_000_000)
+|> MyVal.peek()
+|> MyVal.divide(100)
+|> MyVal.val()
+```
+
+```elixir
+MyVal.new("a")
+```
+
+```elixir
+%MyVal{history: [7, 9]}
+|> MyVal.val()
+```
+
+```elixir
+%MyVal{history: [{7, {:+, 8}}]}
+|> MyVal.val()
+```
+
+```elixir
+MyVal.new(-9)
+|> MyVal.add(9)
+|> MyVal.add("3")
+```
+
+```elixir
+MyVal.new(-9)
+|> MyVal.add(9)
+|> MyVal.subtract("3")
+```
+
+```elixir
+MyVal.new(88)
+|> MyVal.multiply(17)
+|> MyVal.add(1_000_000)
+|> MyVal.peek()
+|> MyVal.divide(100)
+|> MyVal.recalculate()
+```
+
+```elixir
+ExUnit.start()
+
+defmodule MyValTest do
+  use ExUnit.Case
+  require MyVal
+
+  setup do
+    steps = [
+      {:add, 1},
+      {:divide, 10},
+      {:multiply, 2},
+      {:subtract, 10}
+    ]
+
+    %{starting_value: 99, steps: steps}
+  end
+
+  test "silly test" do
+    assert 3 == 2 + 1
+  end
+
+  test "recalculate and val return the same value", %{starting_value: sv, steps: steps} do
+    final_my_value =
+      steps
+      |> Enum.reduce(
+        MyVal.new(sv),
+        fn {op, operand}, acc -> apply(MyVal, op, [acc, operand]) end
+      )
+
+    assert MyVal.recalculate(final_my_value) == MyVal.val(final_my_value)
+  end
+end
+
+ExUnit.run()
+```
