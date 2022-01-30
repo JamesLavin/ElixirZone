@@ -441,9 +441,15 @@ defmodule TestCeltics2 do
   test "McHale is an '85-86 Celtic" do
     celtics = StructCeltics.team()
     players = celtics[:forwards] ++ celtics[:centers] ++ celtics[:guards]
-    # players |> IO.inspect(structs: false)
-    kevin = %Player{lname: "McHale", fname: "Kevin", number: 32, position: :forward}
-    # kevin |> IO.inspect(structs: false)
+    # kevin = %Player{lname: "McHale", fname: "Kevin", number: 32, position: :forward}
+    kevin = %Player{
+      lname: "McHale",
+      fname: "Kevin",
+      number: 32,
+      position: :forward,
+      team: :celtics
+    }
+
     assert RSM.includes?(kevin, players)
   end
 end
