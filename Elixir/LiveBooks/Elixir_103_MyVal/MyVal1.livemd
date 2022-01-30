@@ -1,0 +1,96 @@
+# MyVal
+
+## Section
+
+* https://github.com/Qqwy/elixir-type_check
+* https://elixir-lang.org/getting-started/typespecs-and-behaviours.html
+* https://hexdocs.pm/elixir/1.13.2/typespecs.html
+
+```elixir
+Mix.install([
+  {:type_check, "~> 0.10.0"},
+  {:stream_data, "~> 0.5.0", only: :test}
+])
+```
+
+```elixir
+defimpl Inspect, for: MyVal do
+  def inspect(my_val) do
+    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
+    """
+    #{my_val |> MyVal.val()}
+    """
+  end
+end
+```
+
+```elixir
+defimpl String.Chars, for: MyVal do
+  def to_string(my_val) do
+    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
+    """
+    #{my_val |> MyVal.val()}
+    """
+  end
+end
+```
+
+```elixir
+String.Chars.impl_for([])
+```
+
+```elixir
+defmodule MyVal do
+  use TypeCheck
+  defstruct [:history]
+
+  @type! t :: %MyVal{history: list(number())}
+
+  def val(%MyVal{history: []}), do: nil
+
+  def val(%MyVal{history: [hd | _tl]}), do: hd
+
+  def add(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    val = my_val |> val()
+    %{my_val | history: [val + new_val | hist]}
+  end
+
+  def subtract(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    val = my_val |> val()
+    %{my_val | history: [val - new_val | hist]}
+  end
+
+  def multiply(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    val = my_val |> val()
+    %{my_val | history: [val * new_val | hist]}
+  end
+
+  def divide(%MyVal{history: hist} = my_val, new_val) when is_list(hist) do
+    val = my_val |> val()
+    %{my_val | history: [val / new_val | hist]}
+  end
+
+  def view(%MyVal{history: _hist} = my_val) do
+    %{val: MyVal.val(my_val), my_val: my_val}
+  end
+end
+```
+
+```elixir
+%MyVal{history: [7, 3, -8]}
+|> MyVal.add(8)
+|> MyVal.view()
+
+# |> (fn my_val -> %{val: MyVal.val(my_val), my_val: my_val} end).()
+# |> inspect()
+```
+
+```elixir
+%MyVal{history: [7, 3, -8]}
+|> MyVal.subtract(8)
+|> MyVal.add(11)
+|> MyVal.multiply(10)
+|> MyVal.subtract(10)
+|> MyVal.divide(10)
+|> MyVal.view()
+```

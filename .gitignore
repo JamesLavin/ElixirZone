@@ -8,3 +8,5 @@ erl_crash.dump
 *.beam
 /config/*.secret.exs
 .elixir_ls/
+**/backups
+**/funs_modules_pattern_matching.livemd
