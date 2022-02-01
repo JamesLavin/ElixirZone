@@ -289,6 +289,37 @@ G.greet(:mom) |> IO.inspect()
 G.greet(:best_friend) |> IO.inspect()
 ```
 
+## Guard Clauses
+
+```elixir
+defmodule MyPrint do
+  def print(thing) when is_binary(thing) do
+    thing |> IO.puts()
+  end
+
+  def print(thing) when is_atom(thing) do
+    thing |> Atom.to_string() |> IO.puts()
+  end
+
+  def print(thing) when is_map(thing) do
+    # thing |> Enum.map_join(", ", fn {k, v} -> "#{k}, #{v}" end) |> IO.puts()
+    thing |> Enum.map(fn {k, v} -> "#{k}, #{v}" end) |> Enum.join(" ,") |> IO.puts()
+  end
+end
+```
+
+```elixir
+MyPrint.print("Yay!")
+```
+
+```elixir
+MyPrint.print(:Hooray!)
+```
+
+```elixir
+MyPrint.print(%{Hello: "world"})
+```
+
 ## Maps & Structs
 
 ```elixir
