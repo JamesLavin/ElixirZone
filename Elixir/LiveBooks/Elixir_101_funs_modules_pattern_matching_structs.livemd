@@ -210,6 +210,10 @@ defmodule MyModule do
   def add_3(num) do
     3 + num
   end
+
+  def add_3(num, num2) do
+    3 + num + num2
+  end
 end
 ```
 
@@ -256,6 +260,10 @@ add_3(7)
 ```
 
 ```elixir
+30 |> (&M.add_3/2).(20)
+```
+
+```elixir
 7
 |> (&(&1 + 3)).()
 |> (&(&1 + 2)).()
@@ -278,6 +286,8 @@ defmodule Greeting do
   def greet(:mom), do: "Hi, Mom!"
 
   def greet(:best_friend), do: "Yo! Wassup?!?!"
+
+  def greet(something_else), do: "Sorry, I don't know you."
 end
 ```
 
@@ -287,6 +297,7 @@ alias Greeting, as: G
 G.greet(:professor_williams) |> IO.inspect()
 G.greet(:mom) |> IO.inspect()
 G.greet(:best_friend) |> IO.inspect()
+G.greet("Yo, wassup?") |> IO.inspect()
 ```
 
 ## Guard Clauses
@@ -430,6 +441,7 @@ StructCeltics.team() |> inspect()
 ```
 
 ```elixir
+# StructCeltics.team() |> IO.inspect([{:structs, false}])
 StructCeltics.team() |> IO.inspect(structs: false)
 ```
 
@@ -445,10 +457,21 @@ defmodule TestCeltics do
   test "McHale is an '85-86 Celtic" do
     celtics = StructCeltics.team()
     players = celtics[:forwards] ++ celtics[:centers] ++ celtics[:guards]
-    players |> IO.inspect(structs: false)
-    kevin = %Player{lname: "McHale", fname: "Kevin", number: 32, position: :forward}
-    kevin |> IO.inspect(structs: false)
+    # players |> IO.inspect(structs: false)
+    # TEST FAILS:
+    # kevin = %Player{lname: "McHale", fname: "Kevin", number: 32, position: :forward}
+    # TEST PASSES:
+    kevin = %Player{
+      lname: "McHale",
+      fname: "Kevin",
+      number: 32,
+      position: :forward,
+      team: :celtics
+    }
+
+    # kevin |> IO.inspect(structs: false)
     assert kevin in players
+    # refute kevin not in players
   end
 end
 
@@ -472,14 +495,14 @@ defmodule TestCeltics2 do
   test "McHale is an '85-86 Celtic" do
     celtics = StructCeltics.team()
     players = celtics[:forwards] ++ celtics[:centers] ++ celtics[:guards]
-    # kevin = %Player{lname: "McHale", fname: "Kevin", number: 32, position: :forward}
-    kevin = %Player{
-      lname: "McHale",
-      fname: "Kevin",
-      number: 32,
-      position: :forward,
-      team: :celtics
-    }
+    kevin = %Player{lname: "McHale", fname: "Kevin", number: 32, position: :forward}
+    # kevin = %Player{
+    #  lname: "McHale",
+    #  fname: "Kevin",
+    #  number: 32,
+    #  position: :forward,
+    #  team: :celtics
+    # }
 
     assert RSM.includes?(kevin, players)
   end
