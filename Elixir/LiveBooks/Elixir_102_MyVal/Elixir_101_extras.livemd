@@ -25,7 +25,34 @@ User |> Map.from_struct()
 ```
 
 ```elixir
-%User{name: "john"} |> Map.from_struct()
+{:ok, val} = %{a: 7} |> Map.fetch(:a)
+val
+```
+
+```elixir
+{:ok, name} = %User{name: "Shaniqua"} |> Map.fetch(:name)
+name
+```
+
+```elixir
+{:ok, name} = %User{} |> Map.fetch(:name)
+name
+```
+
+```elixir
+:error = %User{} |> Map.fetch(:field_without_a_key_in_a_user_struct)
+```
+
+The double equals (`==`) equality operator tests for equality of left-hand and right-hand side values
+
+The single equals (`=`) match operator tries to match whatever is on the left-hand side with whatever is on the right-hand side
+
+`%User{}` generates a User struct with the default values for the User struct keys
+
+The following creates identical structs and tests whether they're equal using the `==` operator
+
+```elixir
+%User{} == %User{name: nil}
 ```
 
 ```elixir
@@ -43,7 +70,69 @@ User |> Map.from_struct()
 ## Pattern Matching != Assignment (redux)
 
 ```elixir
+y = 3
+```
+
+*Erlang* is immutable and will NOT allow you to rebind a variable to a new value. Erlang "variables" really aren't variables, they're effectively constants.
+
+*Elixir* **data structures** are immutable, but an Elixir **variable** (which can point at an Elixir data structure) can be **re-bound to point at a different data structure**.
+
+You can, for example, re-bind the left-hand side variable to the evaluated value of the right-hand side, even if the left-hand side variable is currently equal to a different value.
+
+```elixir
+y = y + 1
+```
+
+When you do this, however, the underlying data structure does NOT change. So if anyone else holds another reference to that data structure, their reference will still point at the original data structure.
+
+In this example, the "data structure" is just an integer, but you can see that the value of `b` *does not change* when the value of `a` changes, even though they initially pointed at the very same data structure (i.e., the value `7`).
+
+```elixir
+a = b = 7
+"a = #{a}, b = #{b}"
+```
+
+```elixir
+a = 8
+"a = #{a}, b = #{b}"
+```
+
+To prevent re-binding a variable and insist on matching against a variable's current value, we use "the pin operator" (^).
+
+The pin operator prevents variable re-binding.
+
+If a match succeeds, the result of evaluating the line is the value of the right-hand side.
+
+```elixir
+^y = 4
+```
+
+If attempting to pattern match fails, a `MatchError` is generated:
+
+```elixir
+^y = 5
+```
+
+```elixir
+z = 5
+```
+
+```elixir
+^z = 5
+```
+
+```elixir
 x = %{1 => "a", 2 => "b", 3 => "c"}
+```
+
+Extracting values from Maps
+
+```elixir
+x[1]
+```
+
+```elixir
+Map.get(x, 2)
 ```
 
 The following will all successfully pattern-match because everything on the left-hand side of the match operator (i.e., "=") is present and identical on the right-hand side:
@@ -64,7 +153,7 @@ The following will all FAIL to pattern-match (raising a MatchError) because some
 # %{1 => "a", 2 => "c"} = %{1 => "a", 2 => "b"}
 # %{1 => "a", 2 => "c"} = %{1 => "a"}
 # %{1 => "b"} = %{1 => "a"}
-# %{1 => "b"} = %{}
+%{1 => "b"} = %{}
 ```
 
 We can extract desired values into named variables via pattern-matching:
