@@ -1,0 +1,55 @@
+# Elixir 101: Extras
+
+## Kernel & Kernel.SpecialForms
+
+![Kernel](images/Kernel.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kernel.SpecialForms](images/Kernel.SpecialForms.png)
+
+## Structs... continued
+
+![underneath a struct...](images/underneath_a_struct.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![although structs are maps...](images/although_structs_are_maps.png)
+
+## Documentation
+
+Elixir documentation is amazing, but you'll want to become comfortable surfing it for what you need because functions & macros can live in nooks and crannies.
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kernel.struct/2](images/struct_fun.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+I've just started using the [Dash](https://kapeli.com/dash) code browser (NOT FREE: $30).
+
+I prefer free & open-source tools (and have used tools like DevDocs/DevDogs):
+
+* <https://devdocs.io/>
+* <https://github.com/freeCodeCamp/devdocs>
+* <https://github.com/ragingwind/devdogs>
+
+But Dash is cool because it lets me search Elixir docs, Erlang docs, and even Hex packages, like Phoenix.
+
+I have no relationship with Kapeli, other than just having bought it.
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Dash](images/dash.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Erlang docs](images/erlang.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![binary_to_term](images/binary_to_term.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![universaltime](images/universaltime.png)
