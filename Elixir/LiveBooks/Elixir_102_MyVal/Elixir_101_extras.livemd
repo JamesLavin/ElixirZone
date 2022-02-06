@@ -44,6 +44,13 @@ I have no relationship with Kapeli, other than just having bought it.
 
 <!-- livebook:{"break_markdown":true} -->
 
+Elixir & Erlang docs are searchable!!!
+
+* Typing "erl:" scopes your queries to just Erlang docs
+* Typing "elixir:" scopes your queries to just Elixir docs
+
+<!-- livebook:{"break_markdown":true} -->
+
 ![Erlang docs](images/erlang.png)
 
 <!-- livebook:{"break_markdown":true} -->
@@ -53,3 +60,25 @@ I have no relationship with Kapeli, other than just having bought it.
 <!-- livebook:{"break_markdown":true} -->
 
 ![universaltime](images/universaltime.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+And ALL Hex docs are downloadable & (then) searchable!!!
+
+* Typing "hex:" scopes your queries to Hex packages you have already downloaded
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Phoenix docs too](images/Phoenix_docs.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+Many thanks to those developers who have improved Elixir & Erlang's documentation and helped to standardize them!!!
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Thanks, EEF](images/Thanks_EEF.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Superheroes](images/superheroes.png)
