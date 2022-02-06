@@ -16,6 +16,65 @@
 
 ![although structs are maps...](images/although_structs_are_maps.png)
 
+```elixir
+defmodule User do
+  defstruct [:name]
+end
+
+User |> Map.from_struct()
+```
+
+```elixir
+%User{name: "john"} |> Map.from_struct()
+```
+
+```elixir
+%User{name: "john"} |> Map.from_struct()
+```
+
+```elixir
+%User{name: "john"} |> Map.from_struct() |> (fn map -> struct(User, map) end).()
+```
+
+```elixir
+%User{name: "john"} |> Map.from_struct() |> (&struct(User, &1)).()
+```
+
+## Pattern Matching != Assignment (redux)
+
+```elixir
+x = %{1 => "a", 2 => "b", 3 => "c"}
+```
+
+The following will all successfully pattern-match because everything on the left-hand side of the match operator (i.e., "=") is present and identical on the right-hand side:
+
+```elixir
+%{1 => "a", 2 => "b", 3 => "c"} = %{1 => "a", 2 => "b", 3 => "c"}
+%{1 => "a", 2 => "b"} = %{1 => "a", 2 => "b", 3 => "c"}
+%{3 => "c"} = %{1 => "a", 2 => "b", 3 => "c"}
+%{} = %{1 => "a", 2 => "b", 3 => "c"}
+```
+
+The following will all FAIL to pattern-match (raising a MatchError) because something on the left-hand side is either not present on the right-hand side or is different on the right-hand side:
+
+```elixir
+# These will all fail with an "(MatchError) no match of right hand side value" error message
+
+# %{1 => "a", 2 => "b", 3 => "c"} = %{1 => "a", 2 => "b"}
+# %{1 => "a", 2 => "c"} = %{1 => "a", 2 => "b"}
+# %{1 => "a", 2 => "c"} = %{1 => "a"}
+# %{1 => "b"} = %{1 => "a"}
+# %{1 => "b"} = %{}
+```
+
+We can extract desired values into named variables via pattern-matching:
+
+```elixir
+%{3 => value_of_3} = %{1 => "a", 2 => "b", 3 => "c"}
+
+value_of_3
+```
+
 ## Documentation
 
 Elixir documentation is amazing, but you'll want to become comfortable surfing it for what you need because functions & macros can live in nooks and crannies.
