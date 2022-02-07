@@ -110,6 +110,9 @@ If a match succeeds, the result of evaluating the line is the value of the right
 If attempting to pattern match fails, a `MatchError` is generated:
 
 ```elixir
+# Since `y` is currently bound to the value 4, this pattern-match will fail with a `MatchError`:
+#    "** (MatchError) no match of right hand side value: 5"
+
 ^y = 5
 ```
 
@@ -123,6 +126,12 @@ z = 5
 
 ```elixir
 x = %{1 => "a", 2 => "b", 3 => "c"}
+```
+
+Because `x` is equal to that map, you can now also successfully pattern-match in the opposite direction:
+
+```elixir
+%{1 => "a", 2 => "b", 3 => "c"} = x
 ```
 
 Extracting values from Maps
@@ -144,7 +153,7 @@ The following will all successfully pattern-match because everything on the left
 %{} = %{1 => "a", 2 => "b", 3 => "c"}
 ```
 
-The following will all FAIL to pattern-match (raising a MatchError) because something on the left-hand side is either not present on the right-hand side or is different on the right-hand side:
+The following will all FAIL to pattern-match (raising `MatchError`s) because something on the left-hand side is either not present on the right-hand side or is different on the right-hand side:
 
 ```elixir
 # These will all fail with an "(MatchError) no match of right hand side value" error message
