@@ -23,36 +23,8 @@ TypeCheck:
 ```elixir
 Mix.install([
   {:type_check, "~> 0.10.0"},
-  {:stream_data, "~> 0.5.0", only: :test}
+  {:stream_data, "~> 0.5.0"}
 ])
-```
-
-## (Failed) attempt to override how Elixir displays MyVal instances
-
-```elixir
-defimpl Inspect, for: MyVal do
-  def inspect(my_val) do
-    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
-    """
-    #{my_val |> MyVal.val()}
-    """
-  end
-end
-```
-
-```elixir
-defimpl String.Chars, for: MyVal do
-  def to_string(my_val) do
-    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
-    """
-    #{my_val |> MyVal.val()}
-    """
-  end
-end
-```
-
-```elixir
-String.Chars.impl_for([])
 ```
 
 ## Create the MyVal module
@@ -89,9 +61,37 @@ defmodule MyVal do
   end
 
   def view(%MyVal{history: _hist} = my_val) do
-    %{val: MyVal.val(my_val), my_val: my_val}
+    %{val: val(my_val), my_val: my_val}
   end
 end
+```
+
+## (Failed) attempt to override how Elixir displays MyVal instances
+
+```elixir
+defimpl Inspect, for: MyVal do
+  def inspect(my_val, _opts) do
+    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
+    """
+    #{my_val |> MyVal.val()}
+    """
+  end
+end
+```
+
+```elixir
+defimpl String.Chars, for: MyVal do
+  def to_string(my_val) do
+    # %MyVal{my_value: #{my_val.value}, history: #{my_val.history}}
+    """
+    #{my_val |> MyVal.val()}
+    """
+  end
+end
+```
+
+```elixir
+String.Chars.impl_for([])
 ```
 
 ## Use the MyVal module
@@ -111,6 +111,6 @@ end
 |> MyVal.add(11)
 |> MyVal.multiply(10)
 |> MyVal.subtract(10)
-|> MyVal.divide(10)
+# |> MyVal.divide(10)
 |> MyVal.view()
 ```

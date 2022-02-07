@@ -502,7 +502,11 @@ defmodule MyValTest3 do
       MyVal.new(11)
       |> MyVal.divide(0)
 
-    assert {:error, %MyVal{valid?: false}} = result
+    assert {:error,
+            %MyVal{
+              valid?: false,
+              errors: ["Attempted to apply an invalid action to this MyVal instance"]
+            }} = result
   end
 
   test "attempting to apply_action {:/, 0} returns :error tuple" do
@@ -510,7 +514,11 @@ defmodule MyValTest3 do
       MyVal.new(11)
       |> MyVal.apply_action({:/, 0})
 
-    assert {:error, %MyVal{valid?: false}} = result
+    assert {:error,
+            %MyVal{
+              valid?: false,
+              errors: ["Attempted to apply an invalid action to this MyVal instance"]
+            }} = result
   end
 
   test "attempting to apply_actions when one action is {:/, 0} returns :error tuple" do
@@ -518,7 +526,11 @@ defmodule MyValTest3 do
       MyVal.new(11)
       |> MyVal.apply_actions([{:+, 7}, {:*, 9}, {:/, 0}, {:-, -11}])
 
-    assert {:error, %MyVal{valid?: false}} = result
+    assert {:error,
+            %MyVal{
+              valid?: false,
+              errors: ["Attempted to apply an invalid action to this MyVal instance"]
+            }} = result
   end
 
   def remove_divide_by_zero_actions(list_of_actions) do

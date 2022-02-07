@@ -377,7 +377,7 @@ MyVal.new(88)
 ```
 
 ```elixir
-# %MyVal{changes: [{nil, {:+, 99}}], valid?: true, errors: []} |> MyVal.val()
+%MyVal{changes: [{nil, {:+, 99}}], valid?: true, errors: []} |> MyVal.val()
 ```
 
 ```elixir

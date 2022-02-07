@@ -23,7 +23,7 @@ TypeCheck:
 ```elixir
 Mix.install([
   {:type_check, "~> 0.10.0"},
-  {:stream_data, "~> 0.5.0", only: :test}
+  {:stream_data, "~> 0.5.0"}
 ])
 ```
 
@@ -105,7 +105,7 @@ defmodule MyVal do
     |> Enum.reverse()
   end
 
-  @spec! show_history(t()) :: list(String.t())
+  @spec! show_history2(t()) :: list(String.t())
   def show_history2(%MyVal{history: hist}) do
     hist
     |> Enum.reverse()

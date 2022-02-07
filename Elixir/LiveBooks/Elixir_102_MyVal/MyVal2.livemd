@@ -23,7 +23,7 @@ TypeCheck:
 ```elixir
 Mix.install([
   {:type_check, "~> 0.10.0"},
-  {:stream_data, "~> 0.5.0", only: :test}
+  {:stream_data, "~> 0.5.0"}
 ])
 ```
 
@@ -104,6 +104,7 @@ defmodule MyVal do
 
     Enum.reduce(rest, first, fn {_val, {op, operand}}, acc ->
       apply(Kernel, op, [acc, operand])
+      # Kernel.+(acc, operand)
     end)
   end
 
@@ -124,10 +125,10 @@ defmodule MyVal do
   end
 
   defp first_rest(%MyVal{history: _hist} = my_val) do
-    {{first, {nil, nil}}, rest} =
-      my_val
-      |> history()
-      |> List.pop_at(0)
+    # returns value like {{first, {nil, nil}}, rest}
+    my_val
+    |> history()
+    |> List.pop_at(0)
   end
 end
 ```
