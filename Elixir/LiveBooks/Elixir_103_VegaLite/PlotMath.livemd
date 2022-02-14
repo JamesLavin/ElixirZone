@@ -1,0 +1,224 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Untitled notebook
+
+## Section
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.5.2"},
+  {:vega_lite, "~> 0.1.3"}
+])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+```elixir
+defmodule PlotMath do
+  alias VegaLite, as: Vl
+
+  @default_precision 10
+  @default_sleep_ms 1
+  @default_x_min -2 * :math.pi()
+  @default_x_max 2 * :math.pi()
+
+  def plot_fun(fun, opts \\ []) do
+    precision = Keyword.get(opts, :precision, @default_precision)
+
+    x_min = opts |> calc_x_min()
+
+    x_max = opts |> calc_x_max()
+
+    sleep_ms = Keyword.get(opts, :sleep_ms, @default_sleep_ms)
+
+    widget =
+      Vl.new(width: 400, height: 400)
+      |> Vl.mark(:line)
+      |> Vl.encode_field(:x, "x", type: :quantitative)
+      |> Vl.encode_field(:y, "y", type: :quantitative)
+      |> Kino.VegaLite.new()
+      |> Kino.render()
+
+    xys =
+      calc_xs(x_min, x_max, precision)
+      |> calc_xys(fun)
+
+    for %{x: x, y: y} <- xys do
+      Kino.VegaLite.push(widget, %{x: x, y: y})
+      if sleep_ms > 0, do: Process.sleep(sleep_ms), else: :ok
+    end
+  end
+
+  def calc_xs(x_min, x_max, precision) do
+    # e.g., -6.2..6.2
+    x_min_int = (x_min * precision) |> Kernel.floor()
+    x_max_int = (x_max * precision) |> Kernel.ceil()
+
+    x_min_int..x_max_int
+    |> Enum.to_list()
+    |> Enum.map(&(&1 / precision))
+  end
+
+  def calc_xys(xs, fun) do
+    xs
+    |> Enum.map(&calc_xy(&1, fun))
+    |> Enum.filter(fn %{y: y} -> y != :error end)
+  end
+
+  def calc_xy(x, fun) do
+    y =
+      try do
+        fun.(x)
+      rescue
+        ArithmeticError -> :error
+      end
+
+    %{x: x, y: y}
+  end
+
+  defp calc_x_min(opts) do
+    opts
+    |> Keyword.get(:x_min, @default_x_min)
+    |> :erlang.float()
+    |> Float.floor(1)
+  end
+
+  defp calc_x_max(opts) do
+    opts
+    |> Keyword.get(:x_max, @default_x_max)
+    |> :erlang.float()
+    |> Float.ceil()
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, PlotMath, <<70, 79, 82, 49, 0, 0, 19, ...>>, {:calc_x_max, 1}}
+```
+
+```elixir
+PlotMath.plot_fun(&:math.sin(&1))
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.cos(&1))
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.tan(&1), precision: 100, sleep_ms: 1)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&(1 / :math.tan(&1)), precision: 100, sleep_ms: 1)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&(1 / :math.sin(&1)), precision: 100, sleep_ms: 1)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&(1 / :math.cos(&1)), precision: 100, sleep_ms: 1)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.log(&1), precision: 100, sleep_ms: 1)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.exp(&1), precision: 100, sleep_ms: 1, x_min: -3, x_max: 3)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.pow(&1, 2), precision: 100, sleep_ms: 1, x_min: -3, x_max: 3)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.pow(&1, 3), precision: 100, sleep_ms: 1, x_min: -3, x_max: 3)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+```elixir
+PlotMath.plot_fun(&:math.pow(&1, 4), precision: 100, sleep_ms: 1, x_min: -4, x_max: 4)
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
