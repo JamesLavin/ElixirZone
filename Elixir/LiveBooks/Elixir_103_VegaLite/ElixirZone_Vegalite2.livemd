@@ -12,17 +12,78 @@
 Mix.install([
   {:vega_lite, "~> 0.1.3"},
   {:kino, "~> 0.5.0"},
-  {:jason, "~> 1.2"}
+  {:jason, "~> 1.2"},
+  {:explorer, "~> 0.1.0-dev", github: "elixir-nx/explorer", branch: "main"}
 ])
 ```
 
 ```elixir
+alias Explorer.DataFrame
+alias Explorer.Series
+alias Explorer.Datasets
+ff = Datasets.fossil_fuels()
+```
 
+```elixir
+ff |> DataFrame.names()
+```
+
+```elixir
+ff |> DataFrame.dtypes()
+```
+
+```elixir
+ff |> DataFrame.shape()
+```
+
+```elixir
+{DataFrame.n_rows(ff), DataFrame.n_cols(ff)}
+```
+
+```elixir
+ff |> DataFrame.head()
+```
+
+```elixir
+ff |> DataFrame.tail(10)
+```
+
+```elixir
+usa = ff |> DataFrame.filter(&Series.equal(&1["country"], "UNITED STATES OF AMERICA"))
+```
+
+```elixir
+DataFrame.table(usa)
+```
+
+```elixir
+ff |> DataFrame.table()
+```
+
+```elixir
+iris = Datasets.iris()
+```
+
+```elixir
+dat = iris |> DataFrame.to_map() |> Keyword.new()
 ```
 
 ```elixir
 alias VegaLite, as: Vl
+```
 
+The following example comes from Christopher Grainger at <https://twitter.com/cigrainger/status/1492321004005519366>
+
+```elixir
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(dat)
+|> Vl.mark(:point, filled: true, tooltip: %{content: "data"})
+|> Vl.encode_field(:x, "petal_length", type: :quantitative)
+|> Vl.encode_field(:y, "petal_width", type: :quantitative)
+|> Vl.encode(:color, field: "species", type: :nominal)
+```
+
+```elixir
 # Initialize the specification, optionally with some top-level properties
 Vl.new(width: 400, height: 400)
 
