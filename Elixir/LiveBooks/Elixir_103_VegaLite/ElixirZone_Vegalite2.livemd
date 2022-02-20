@@ -1,12 +1,90 @@
-# ElixirZone VegaLite
+# ElixirZone: Kino, VegaLite, and Explorer
 
 ## Section
 
+
+
+<!-- livebook:{"break_markdown":true} -->
+
+Kino:
+
+* https://github.com/livebook-dev/kino
+* https://hexdocs.pm/kino/Kino.html
+
+Explorer (DataFrames for Elixir):
+
+* https://github.com/elixir-nx/explorer
+* https://raw.githubusercontent.com/elixir-nx/explorer/main/notebooks/exploring_explorer.livemd
+
+Vega & VegaLite:
+
 * https://hexdocs.pm/vega_lite/VegaLite.html
+* https://github.com/livebook-dev/vega_lite
 * https://vega.github.io/
 * https://vega.github.io/vega-lite/examples/
 * https://vega.github.io/vega-lite/tutorials/getting_started.html
 * https://vega.github.io/vega-lite/tutorials/explore.html
+
+Vega-Lite:
+
+* https://vega.github.io/vega-lite/
+* https://vega.github.io/vega-lite/examples/
+
+<!-- livebook:{"break_markdown":true} -->
+
+![NX project](images/nx_project.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![NX library](images/nx_lib.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Explorer](images/explorer.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![LiveBook-dev](images/livebook_dev.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kino](images/kino.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kino ETS](images/kino2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kino3](images/kino3.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kino4](images/kino4.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kino5](images/kino5.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![VegaLite](images/vegalite.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Kino-VegaLite](images/kino1.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Vega-Lite](images/vega-lite.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Vega-Lite1](images/vega-lite1.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Vega-Lite2](images/vega-lite2.png)
 
 ```elixir
 Mix.install([
