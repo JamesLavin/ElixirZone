@@ -1,10 +1,6 @@
 # ElixirZone: Kino, VegaLite, and Explorer
 
-## Section
-
-
-
-<!-- livebook:{"break_markdown":true} -->
+## Resource Links
 
 Kino:
 
@@ -30,7 +26,7 @@ Vega-Lite:
 * https://vega.github.io/vega-lite/
 * https://vega.github.io/vega-lite/examples/
 
-<!-- livebook:{"break_markdown":true} -->
+## Screenshots of technologies we'll play with
 
 ![NX project](images/nx_project.png)
 
@@ -86,6 +82,8 @@ Vega-Lite:
 
 ![Vega-Lite2](images/vega-lite2.png)
 
+## Let's get started!
+
 ```elixir
 Mix.install([
   {:vega_lite, "~> 0.1.3"},
@@ -95,10 +93,29 @@ Mix.install([
 ])
 ```
 
+## Kino
+
+```elixir
+# :ets.new(:my_ets,[:ordered_set, :named_table])
+# :ets.insert(:my_ets, {"555-1234", "John Smith"})
+# :ets.insert(:my_ets, {"555-4321", "Darius Jones"})
+```
+
+```elixir
+Kino.ETS.new(:my_ets)
+```
+
+```elixir
+:ets.insert(:my_ets, {"867-5309", "Jenny"})
+```
+
+## Explorer
+
 ```elixir
 alias Explorer.DataFrame
 alias Explorer.Series
 alias Explorer.Datasets
+
 ff = Datasets.fossil_fuels()
 ```
 
@@ -123,7 +140,7 @@ ff |> DataFrame.head()
 ```
 
 ```elixir
-ff |> DataFrame.tail(10)
+ff |> DataFrame.tail(8)
 ```
 
 ```elixir
@@ -145,6 +162,53 @@ iris = Datasets.iris()
 ```elixir
 dat = iris |> DataFrame.to_map() |> Keyword.new()
 ```
+
+## VegaLite
+
+<https://vega.github.io/vega-lite/examples/point_offset_random.html>
+
+```elixir
+alias VegaLite, as: Vl
+
+Vl.from_json("""
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Shows the relationship between horsepower and the numbver of cylinders using point marks with random offset (jittering).",
+  "data": {"url": "https://vega.github.io/editor/data/cars.json"},
+  "transform": [{"calculate": "random()", "as": "random"}],
+  "height": {"step": 50},
+  "mark": "point",
+  "encoding": {
+    "x": {"field": "Horsepower", "type": "quantitative"},
+    "y": {"field": "Cylinders", "type": "ordinal"},
+    "yOffset": {"field": "random", "type": "quantitative"}
+  }
+}
+""")
+
+# |> Vl.to_spec()
+```
+
+```elixir
+Vl.from_json("""
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Shows the relationship between horsepower and the numbver of cylinders using point marks with random offset (jittering).",
+  "data": {"url": "https://vega.github.io/editor/data/cars.json"},
+  "transform": [{"calculate": "random()", "as": "random"}],
+  "height": {"step": 50},
+  "mark": "point",
+  "encoding": {
+    "x": {"field": "Horsepower", "type": "quantitative"},
+    "y": {"field": "Cylinders", "type": "ordinal"},
+    "yOffset": {"field": "random", "type": "quantitative"}
+  }
+}
+""")
+|> IO.inspect()
+```
+
+## VegaLite 2
 
 ```elixir
 alias VegaLite, as: Vl
@@ -183,17 +247,20 @@ Vl.new(width: 400, height: 400)
 ```
 
 ```elixir
-Vl.new() |> inspect()
-```
-
-```elixir
 Vl.new()
 |> Vl.data_from_values([
-  %{a: "C", b: 2},
-  %{a: "C", b: 7}
+  %{a: "Canada", score: 2},
+  %{a: "United Kingdom", score: 7},
+  %{a: "Canada", score: 6},
+  %{a: "Latvia", score: 8}
 ])
-|> inspect()
+|> Vl.mark(:point)
+|> Vl.encode_field(:x, "a", type: :nominal)
+|> Vl.encode_field(:y, "score", type: :quantitative)
+|> IO.inspect()
 ```
+
+<https://vega.github.io/vega-lite/examples/point_2d.html>
 
 ```elixir
 Vl.from_json("""
@@ -206,7 +273,6 @@ Vl.from_json("""
   }
 }
 """)
-|> inspect()
 ```
 
 ```elixir
@@ -347,6 +413,30 @@ Vl.new()
 ```elixir
 Vl.from_json("""
 {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "https://vega.github.io/editor/data/unemployment-across-industries.json"},
+  "width": 300, "height": 200,
+  "mark": "area",
+  "encoding": {
+    "x": {
+      "timeUnit": "yearmonth", "field": "date",
+      "axis": {"domain": false, "format": "%Y"}
+    },
+    "y": {
+      "aggregate": "sum", "field": "count",
+      "axis": null,
+      "stack": "normalize"
+
+    },
+    "color": {"field":"series", "scale":{"scheme": "category20b"}}
+  }
+}
+""")
+```
+
+```elixir
+Vl.from_json("""
+{
   "data": { "url": "https://vega.github.io/editor/data/cars.json" },
   "mark": "point",
   "encoding": {
@@ -371,6 +461,20 @@ Vl.new()
 Vl.new()
 |> Vl.data_from_url("https://vega.github.io/editor/data/stocks.csv")
 |> Vl.transform(filter: "datum.symbol==='GOOG'")
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "date", type: :temporal)
+|> Vl.encode_field(:y, "price", type: :quantitative)
+```
+
+```elixir
+# Data exists for "MSFT" "GOOG" "IBM" "AAPL" and "AMZN"
+stock_ticker = Kino.Input.text("Which stock ticker?")
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/stocks.csv")
+|> Vl.transform(filter: "datum.symbol==='#{Kino.Input.read(stock_ticker)}'")
 |> Vl.mark(:line)
 |> Vl.encode_field(:x, "date", type: :temporal)
 |> Vl.encode_field(:y, "price", type: :quantitative)
