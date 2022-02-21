@@ -1,5 +1,9 @@
 # Exploring Explorer
 
+## This LiveBook comes from https://github.com/elixir-nx/explorer
+
+<https://raw.githubusercontent.com/elixir-nx/explorer/main/notebooks/exploring_explorer.livemd>
+
 ## Installation
 
 Connect to a `Mix` project with `Explorer` installed or:
@@ -7,7 +11,7 @@ Connect to a `Mix` project with `Explorer` installed or:
 ```elixir
 Mix.install([
   {:explorer, "~> 0.1.0-dev", github: "elixir-nx/explorer"},
-  {:kino, "~> 0.4.1"}
+  {:kino, "~> 0.5.2"}
 ])
 ```
 

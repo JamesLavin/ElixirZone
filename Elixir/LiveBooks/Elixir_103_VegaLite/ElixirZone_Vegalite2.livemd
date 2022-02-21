@@ -211,6 +211,30 @@ ff = Datasets.fossil_fuels()
 ```
 
 ```elixir
+ff |> DataFrame.sample(5)
+```
+
+```elixir
+ff |> DataFrame.sample(0.01)
+```
+
+```elixir
+ff |> DataFrame.take([300, 301, 301])
+```
+
+```elixir
+ff |> DataFrame.slice(-5, 5)
+```
+
+```elixir
+ff["solid_fuel"]
+```
+
+```elixir
+ff[["year", "country"]]
+```
+
+```elixir
 ff |> DataFrame.names()
 ```
 
@@ -508,6 +532,8 @@ Vl.new()
 ```
 
 ```elixir
+# Source: https://vega.github.io/vega-lite/examples/stacked_area_normalize.html
+
 Vl.from_json("""
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
