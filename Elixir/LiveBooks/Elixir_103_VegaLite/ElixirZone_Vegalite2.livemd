@@ -89,11 +89,12 @@ Mix.install([
   {:vega_lite, "~> 0.1.3"},
   {:kino, "~> 0.5.0"},
   {:jason, "~> 1.2"},
-  {:explorer, "~> 0.1.0-dev", github: "elixir-nx/explorer", branch: "main"}
+  {:explorer, "~> 0.1.0-dev", github: "elixir-nx/explorer", branch: "main"},
+  {:ecto, "~> 3.7.1"}
 ])
 ```
 
-## Kino
+## Kino.ETS
 
 ```elixir
 # :ets.new(:my_ets,[:ordered_set, :named_table])
@@ -107,6 +108,86 @@ Kino.ETS.new(:my_ets)
 
 ```elixir
 :ets.insert(:my_ets, {"867-5309", "Jenny"})
+```
+
+## Kino.Ecto
+
+```elixir
+defmodule Muppet do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key false
+  embedded_schema do
+    field(:name, :string, null: false)
+    field(:puppeteer, :string)
+    field(:catchphrase, :string)
+  end
+
+  def new(attrs) do
+    changeset(nil, attrs)
+  end
+
+  def changeset(maybe_muppet, attrs) do
+    muppet =
+      maybe_muppet
+      |> ensure_muppet()
+      |> cast(attrs, [:name, :puppeteer, :catchphrase])
+      |> validate_required([:name])
+
+    with %{valid?: true} <- muppet,
+         {:ok, muppet} <- apply_changes(muppet) do
+      muppet
+    end
+  end
+
+  defp ensure_muppet(%Muppet{} = muppet), do: muppet
+  defp ensure_muppet(_not_muppet), do: %Muppet{}
+end
+```
+
+```elixir
+kermit = Muppet.new(%{name: "Kermit", puppeteer: "Jim Henson", catchphrase: "Hiyo!"})
+```
+
+```elixir
+# Example inspired by https://akoutmos.com/post/ecto-repo-testing/
+
+defmodule Muppet.Repo do
+  alias Muppet
+
+  def all(queryable, opts \\ [])
+
+  def all(Muppet, _opts) do
+    [
+      %Muppet{
+        name: "Kermit",
+        puppeteer: "Jim Henson",
+        catchphrase: "Hiyo!"
+      },
+      %Muppet{
+        name: "Beaker",
+        catchphrase: "Meep meep",
+        puppeteer: "Richard Hunt"
+      },
+      %Muppet{name: "Grover", puppeteer: "Frank Oz", catchphrase: "It's SUP-er Grover!"}
+    ]
+  end
+
+  def all(_queryable, opts), do: all(Muppet, opts)
+
+  def aggregate(Muppet, :count, _opts \\ []) do
+    3
+  end
+end
+```
+
+```elixir
+grover = Muppet.new(%{name: "Grover", puppeteer: "Frank Oz", catchphrase: "It's SUP-er Grover!"})
+```
+
+```elixir
+Kino.Ecto.new(Muppet, Muppet.Repo)
 ```
 
 ## Explorer
@@ -208,12 +289,6 @@ Vl.from_json("""
 |> IO.inspect()
 ```
 
-## VegaLite 2
-
-```elixir
-alias VegaLite, as: Vl
-```
-
 The following example comes from Christopher Grainger at <https://twitter.com/cigrainger/status/1492321004005519366>
 
 ```elixir
@@ -241,9 +316,21 @@ Vl.new(width: 400, height: 400)
 # Map data fields to visual properties of the mark, like position or shape
 |> Vl.encode_field(:x, "iteration", type: :quantitative)
 |> Vl.encode_field(:y, "score", type: :quantitative)
+```
 
-# |> Vl.encode(:color, "country", type: :nominal)
-# |> Vl.encode(:size, "count", type: :quantitative)
+```elixir
+Vl.new(width: 400, height: 400)
+
+# Specify data source for the graphic, see the data_from_* functions
+|> Vl.data_from_series(iteration: 1..100, score: 1..100)
+
+# |> Vl.mark(:line)
+|> Vl.mark(:point, tooltip: true)
+
+# Map data fields to visual properties of the mark, like position or shape
+|> Vl.encode_field(:x, "iteration", type: :quantitative)
+|> Vl.encode_field(:y, "score", type: :quantitative)
+|> Vl.encode_field(:color, "score", type: :quantitative)
 ```
 
 ```elixir
