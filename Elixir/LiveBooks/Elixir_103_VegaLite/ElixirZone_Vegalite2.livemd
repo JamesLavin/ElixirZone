@@ -122,6 +122,22 @@ Vega-Lite:
 
 ![EXLA](images/EXLA.png)
 
+<!-- livebook:{"break_markdown":true} -->
+
+![OpenCV](images/OpenCV.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![evision](images/evision.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Cocoa](images/Cocoa.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Cocoa ThinkingElixir](images/Thinking_Elixir_Cocoa_Xu.png)
+
 ## Let's get started!
 
 ```elixir
