@@ -2,6 +2,10 @@
 
 ## Resource Links
 
+NX:
+
+* https://github.com/elixir-nx/nx
+
 Kino:
 
 * https://github.com/livebook-dev/kino
@@ -82,6 +86,42 @@ Vega-Lite:
 
 ![Vega-Lite2](images/vega-lite2.png)
 
+## More established data analytics platforms
+
+![R](images/RLang.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Scikit-Learn](images/Scikit-Learn.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![SciPy](images/SciPy.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Julia](images/JuliaLang.png)
+
+## Cool stuff I won't cover today
+
+![PyTorch 2](images/PyTorch2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![PyTorch](images/PyTorch.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![TorchX](images/TorchX.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![XLA](images/XLA.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![EXLA](images/EXLA.png)
+
 ## Let's get started!
 
 ```elixir
@@ -93,6 +133,34 @@ Mix.install([
   {:ecto, "~> 3.7.1"}
 ])
 ```
+
+## Nx
+
+```elixir
+t = Nx.tensor([[1, 2], [3, 4], [5, 6]])
+```
+
+```elixir
+Nx.shape(t)
+```
+
+```elixir
+Nx.exp(t)
+```
+
+```elixir
+[[:math.exp(1), :math.exp(2)], [:math.exp(3), :math.exp(4)], [:math.exp(5), :math.exp(6)]]
+```
+
+```elixir
+Nx.divide(Nx.exp(t), Nx.sum(Nx.exp(t)))
+```
+
+![softmax](images/softmax.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![NX performance](images/NX_performance.png)
 
 ## Kino.Input
 
@@ -365,6 +433,48 @@ Vl.new(width: 400, height: 400)
 |> Vl.encode_field(:x, "iteration", type: :quantitative)
 |> Vl.encode_field(:y, "score", type: :quantitative)
 |> Vl.encode_field(:color, "score", type: :quantitative)
+```
+
+```elixir
+random_values = fn ->
+  1..100 |> Enum.to_list() |> Enum.sort_by(fn _num -> :random.uniform() end)
+end
+```
+
+```elixir
+Vl.new(width: 400, height: 400)
+
+# Specify data source for the graphic, see the data_from_* functions
+|> Vl.data_from_series(age: 1..100, score: random_values.())
+|> Vl.mark(:point, tooltip: true)
+|> Vl.encode_field(:x, "age", type: :quantitative)
+|> Vl.encode_field(:y, "score", type: :quantitative)
+|> Vl.encode_field(:color, "score", type: :quantitative)
+```
+
+```elixir
+age_scores =
+  Enum.zip(random_values.(), random_values.())
+  |> Enum.map(fn {age, score} -> %{age: age, score: score} end)
+```
+
+```elixir
+display =
+  Vl.new(width: 400, height: 400)
+
+  # Specify data source for the graphic, see the data_from_* functions
+  |> Vl.data_from_series(age: random_values.(), score: random_values.())
+  |> Vl.mark(:point, tooltip: true)
+  |> Vl.encode_field(:x, "age", type: :quantitative)
+  |> Vl.encode_field(:y, "score", type: :quantitative)
+  |> Vl.encode_field(:color, "score", type: :quantitative)
+  |> Kino.VegaLite.new()
+  |> Kino.render()
+
+Enum.each(age_scores, fn score ->
+  Kino.VegaLite.push(display, score)
+  Process.sleep(100)
+end)
 ```
 
 ```elixir
