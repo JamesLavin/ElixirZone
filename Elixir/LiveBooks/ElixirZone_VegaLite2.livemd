@@ -1,0 +1,426 @@
+# ElixirZone VegaLite
+
+## Section
+
+* https://hexdocs.pm/vega_lite/VegaLite.html
+* https://vega.github.io/
+* https://vega.github.io/vega-lite/examples/
+* https://vega.github.io/vega-lite/tutorials/getting_started.html
+* https://vega.github.io/vega-lite/tutorials/explore.html
+
+```elixir
+Mix.install([
+  {:vega_lite, "~> 0.1.3"},
+  {:kino, "~> 0.5.0"},
+  {:jason, "~> 1.2"}
+])
+```
+
+```elixir
+
+```
+
+```elixir
+alias VegaLite, as: Vl
+
+# Initialize the specification, optionally with some top-level properties
+Vl.new(width: 400, height: 400)
+
+# Specify data source for the graphic, see the data_from_* functions
+|> Vl.data_from_series(iteration: 1..100, score: 1..100)
+# |> Vl.data_from_values([%{iteration: 1, score: 1}, ...])
+# |> Vl.data_from_url("...")
+
+# Pick a visual mark for the graphic
+|> Vl.mark(:line)
+# |> Vl.mark(:point, tooltip: true)
+
+# Map data fields to visual properties of the mark, like position or shape
+|> Vl.encode_field(:x, "iteration", type: :quantitative)
+|> Vl.encode_field(:y, "score", type: :quantitative)
+
+# |> Vl.encode(:color, "country", type: :nominal)
+# |> Vl.encode(:size, "count", type: :quantitative)
+```
+
+```elixir
+Vl.new() |> inspect()
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_values([
+  %{a: "C", b: 2},
+  %{a: "C", b: 7}
+])
+|> inspect()
+```
+
+```elixir
+Vl.from_json("""
+{
+  "data": { "url": "https://vega.github.io/editor/data/cars.json" },
+  "mark": "point",
+  "encoding": {
+    "x": { "field": "Horsepower", "type": "quantitative" },
+    "y": { "field": "Miles_per_Gallon", "type": "quantitative" }
+  }
+}
+""")
+|> inspect()
+```
+
+```elixir
+# https://vega.github.io/vega-lite/tutorials/getting_started.html
+
+Vl.new()
+|> Vl.data_from_values([
+  %{a: "C", b: 2},
+  %{a: "C", b: 7},
+  %{a: "C", b: 4},
+  %{a: "D", b: 1},
+  %{a: "D", b: 2},
+  %{a: "D", b: 6},
+  %{a: "E", b: 8},
+  %{a: "E", b: 4},
+  %{a: "E", b: 7}
+])
+|> Vl.mark(:point, tooltip: true)
+|> Vl.encode_field(:x, "a", type: :nominal)
+|> Vl.encode_field(:y, "b", type: :quantitative)
+# |> inspect()
+|> tap(&IO.inspect/1)
+```
+
+```elixir
+# https://vega.github.io/vega-lite/tutorials/getting_started.html
+
+Vl.new()
+|> Vl.data_from_values([
+  %{a: "C", b: 2},
+  %{a: "C", b: 7},
+  %{a: "C", b: 4},
+  %{a: "D", b: 1},
+  %{a: "D", b: 2},
+  %{a: "D", b: 6},
+  %{a: "E", b: 8},
+  %{a: "E", b: 4},
+  %{a: "E", b: 7}
+])
+|> Vl.mark(:bar)
+|> Vl.encode_field(:y, "a", type: :nominal)
+|> Vl.encode_field(:x, "b", type: :quantitative, aggregate: :mean, title: "avg(b)")
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:tick)
+|> Vl.encode_field(:x, "precipitation",
+  type: :quantitative,
+  title: "Daily precipitation in Seattle"
+)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:bar)
+|> Vl.encode_field(:x, "precipitation", bin: true, title: "Daily precipitation in Seattle")
+|> Vl.encode(:y, aggregate: :count)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "date", time_unit: :month)
+|> Vl.encode_field(:y, "precipitation", aggregate: :mean)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "date", time_unit: :yearmonth)
+|> Vl.encode_field(:y, "temp_max", aggregate: :max)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "date", time_unit: :year)
+|> Vl.encode_field(:y, "temp_max", aggregate: :mean)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.transform(calculate: "datum.temp_max - datum.temp_min", as: "temp_range")
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "date", time_unit: :month)
+|> Vl.encode_field(:y, "temp_range", aggregate: :mean)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:bar)
+|> Vl.encode_field(:x, "date", type: :ordinal, time_unit: :month)
+|> Vl.encode(:y, aggregate: :count, type: :quantitative)
+|> Vl.encode_field(:color, "weather", type: :nominal)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/seattle-weather.csv")
+|> Vl.mark(:bar)
+|> Vl.encode_field(:x, "date", type: :ordinal, time_unit: :month, title: "Month of the year")
+|> Vl.encode(:y, aggregate: :count, type: :quantitative)
+|> Vl.encode_field(:color, "weather",
+  type: :nominal,
+  title: "Weather type",
+  scale: [
+    domain: ["sun", "fog", "drizzle", "rain", "snow"],
+    range: ["#e7ba52", "#c7c7c7", "#aec7e8", "#1f77b4", "#9467bd"]
+  ]
+)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/weather.csv")
+|> Vl.transform(filter: "datum.location == 'Seattle'")
+|> Vl.concat([
+  Vl.new()
+  |> Vl.mark(:bar)
+  |> Vl.encode_field(:x, "date", time_unit: :month, type: :ordinal)
+  |> Vl.encode_field(:y, "precipitation", aggregate: :mean),
+  Vl.new()
+  |> Vl.mark(:point)
+  |> Vl.encode_field(:x, "temp_min", bin: true)
+  |> Vl.encode_field(:y, "temp_max", bin: true)
+  |> Vl.encode(:size, aggregate: :count)
+])
+```
+
+```elixir
+Vl.from_json("""
+{
+  "data": { "url": "https://vega.github.io/editor/data/cars.json" },
+  "mark": "point",
+  "encoding": {
+    "x": { "field": "Horsepower", "type": "quantitative" },
+    "y": { "field": "Miles_per_Gallon", "type": "quantitative" }
+  }
+}
+""")
+```
+
+```elixir
+# https://vega.github.io/vega-lite/examples/point_2d.html
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/cars.json")
+|> Vl.mark(:point, tooltip: true)
+|> Vl.encode_field(:x, "Horsepower", type: :quantitative)
+|> Vl.encode_field(:y, "Miles_per_Gallon", type: :quantitative)
+```
+
+```elixir
+# https://vega.github.io/vega-lite/examples/line.html
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/stocks.csv")
+|> Vl.transform(filter: "datum.symbol==='GOOG'")
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "date", type: :temporal)
+|> Vl.encode_field(:y, "price", type: :quantitative)
+```
+
+```elixir
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/weather.csv")
+|> Vl.repeat(
+  ["temp_max", "precipitation", "wind"],
+  Vl.new()
+  |> Vl.mark(:line)
+  |> Vl.encode_field(:x, "date", time_unit: "month")
+  |> Vl.encode_repeat(:y, :repeat, aggregate: :mean, type: :quantitative)
+  |> Vl.encode_field(:color, "location")
+)
+```
+
+```elixir
+# https://vega.github.io/vega-lite/examples/repeat_layer.html
+# Vl.new()
+# |> Vl.data_from_url("https://vega.github.io/editor/data/movies.json")
+# |> Vl.repeat(
+#  ["US Gross", "Worldwide Gross"],
+#  Vl.new()
+#  |> Vl.mark(:line)
+#  |> Vl.encode_field(:x, "IMDB Rating", type: :quantitative, bin: true)
+#  |> Vl.encode_repeat(:y, :repeat, aggregate: :mean, type: :quantitative)
+#  |> Vl.encode_field(:color, :repeat, type: :nominal)
+# )
+```
+
+```elixir
+# https://vega.github.io/vega-lite/docs/repeat.html#repeated-histogram-wrapped
+
+Vl.new(columns: 2)
+|> Vl.data_from_url("https://vega.github.io/editor/data/cars.json")
+|> Vl.repeat(
+  ["Horsepower", "Miles_per_Gallon", "Acceleration", "Displacement"],
+  Vl.new()
+  |> Vl.mark(:bar)
+  |> Vl.encode_repeat(:x, :repeat, bin: true)
+  |> Vl.encode_field(:y, "count", aggregate: :count)
+  |> Vl.encode_field(:color, "Origin")
+)
+```
+
+```elixir
+# https://vega.github.io/vega-lite/docs/repeat.html#scatterplot-matrix-splom
+
+Vl.from_json("""
+{
+  "data": {"url": "https://vega.github.io/editor/data/penguins.json"},
+  "repeat": {
+    "row": [
+      "Beak Length (mm)",
+      "Beak Depth (mm)",
+      "Flipper Length (mm)",
+      "Body Mass (g)"
+    ],
+    "column": [
+      "Body Mass (g)",
+      "Flipper Length (mm)",
+      "Beak Depth (mm)",
+      "Beak Length (mm)"
+    ]
+  },
+  "spec": {
+    "width": 150,
+    "height": 150,
+    "mark": "point",
+    "encoding": {
+      "x": {
+        "field": {"repeat": "column"},
+        "type": "quantitative",
+        "scale": {"zero": false}
+      },
+      "y": {
+        "field": {"repeat": "row"},
+        "type": "quantitative",
+        "scale": {"zero": false}
+      },
+      "color": {"field": "Species", "type": "nominal"}
+    }
+  }
+}
+""")
+```
+
+```elixir
+# https://vega.github.io/vega-lite/docs/repeat.html#scatterplot-matrix-splom
+
+Vl.new()
+|> Vl.data_from_url("https://vega.github.io/editor/data/penguins.json")
+|> Vl.repeat(
+  [
+    row: [
+      "Beak Length (mm)",
+      "Beak Depth (mm)",
+      "Flipper Length (mm)",
+      "Body Mass (g)"
+    ],
+    column: [
+      "Body Mass (g)",
+      "Flipper Length (mm)",
+      "Beak Depth (mm)",
+      "Beak Length (mm)"
+    ]
+  ],
+  Vl.new(width: 150, height: 150)
+  |> Vl.mark(:point)
+  |> Vl.encode_repeat(:x, :column, type: :quantitative, scale: [zero: false])
+  |> Vl.encode_repeat(:y, :row, type: :quantitative, scale: [zero: false])
+  |> Vl.encode_field(:color, "Species", type: :nominal)
+)
+```
+
+```elixir
+# https://vega.github.io/vega-lite/examples/area_gradient.html
+
+Vl.from_json("""
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "https://vega.github.io/editor/data/cars.json"},
+  "mark": "rect",
+  "encoding": {
+    "y": {"field": "Origin", "type": "nominal"},
+    "x": {"field": "Cylinders", "type": "ordinal"},
+    "color": {"aggregate": "mean", "field": "Horsepower"}
+  },
+  "config": {
+    "axis": {"grid": true, "tickBand": "extent"}
+  }
+}
+""")
+```
+
+```elixir
+# https://vega.github.io/vega-lite/examples/arc_donut.html
+
+Vl.from_json("""
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "A simple donut chart with embedded data.",
+  "data": {
+    "values": [
+      {"category": 1, "value": 4},
+      {"category": 2, "value": 6},
+      {"category": 3, "value": 10},
+      {"category": 4, "value": 3},
+      {"category": 5, "value": 7},
+      {"category": 6, "value": 8}
+    ]
+  },
+  "mark": {"type": "arc", "innerRadius": 50},
+  "encoding": {
+    "theta": {"field": "value", "type": "quantitative"},
+    "color": {"field": "category", "type": "nominal"}
+  }
+}
+
+""")
+```
+
+```elixir
+# https://vega.github.io/vega-lite/examples/stacked_bar_normalize.html
+
+Vl.from_json("""
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": { "url": "https://vega.github.io/editor/data/population.json"},
+  "transform": [
+    {"filter": "datum.year == 2000"},
+    {"calculate": "datum.sex == 2 ? 'Female' : 'Male'", "as": "gender"}
+  ],
+  "mark": "bar",
+  "width": {"step": 17},
+  "encoding": {
+    "y": {
+      "aggregate": "sum", "field": "people",
+      "title": "population",
+      "stack":  "normalize"
+    },
+    "x": {"field": "age"},
+    "color": {
+      "field": "gender",
+      "scale": {"range": ["#675193", "#ca8861"]}
+    }
+  }
+}
+""")
+```
