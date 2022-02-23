@@ -165,6 +165,12 @@ t = Nx.tensor([[1, 2], [3, 4], [5, 6]])
 ```
 
 ```elixir
+t |> Nx.to_heatmap()
+```
+
+![Sean Moriarity](images/sean_moriarity.png)
+
+```elixir
 Nx.shape(t)
 ```
 
@@ -174,6 +180,10 @@ Nx.exp(t)
 
 ```elixir
 [[:math.exp(1), :math.exp(2)], [:math.exp(3), :math.exp(4)], [:math.exp(5), :math.exp(6)]]
+```
+
+```elixir
+t |> Nx.exp() |> Nx.to_heatmap()
 ```
 
 ```elixir
