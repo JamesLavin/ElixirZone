@@ -40,6 +40,10 @@ Vega-Lite:
 
 <!-- livebook:{"break_markdown":true} -->
 
+![NX first commit](images/nx_first_commit.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
 ![Explorer](images/explorer.png)
 
 <!-- livebook:{"break_markdown":true} -->
@@ -121,6 +125,10 @@ Vega-Lite:
 <!-- livebook:{"break_markdown":true} -->
 
 ![EXLA](images/EXLA.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Jose never stops](images/jose_never_stops.png)
 
 <!-- livebook:{"break_markdown":true} -->
 
