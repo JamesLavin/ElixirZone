@@ -284,6 +284,43 @@ grover = Muppet.new(%{name: "Grover", puppeteer: "Frank Oz", catchphrase: "It's 
 Kino.Ecto.new(Muppet, Muppet.Repo)
 ```
 
+## Kino.JS
+
+```elixir
+defmodule Kino.Mermaid do
+  use Kino.JS
+
+  def new(graph) do
+    Kino.JS.new(__MODULE__, graph)
+  end
+
+  asset "main.js" do
+    """
+    import "https://cdn.jsdelivr.net/npm/mermaid@8.13.3/dist/mermaid.min.js";
+
+    mermaid.initialize({ startOnLoad: false });
+
+    export function init(ctx, graph) {
+      mermaid.render("graph1", graph, (svgSource, bindListeners) => {
+        ctx.root.innerHTML = svgSource;
+        bindListeners && bindListeners(ctx.root);
+      });
+    }
+    """
+  end
+end
+```
+
+```elixir
+Kino.Mermaid.new("""
+graph TD;
+  A-->B;
+  A-->C;
+  B-->D;
+  C-->D;
+""")
+```
+
 ## Explorer
 
 ```elixir
