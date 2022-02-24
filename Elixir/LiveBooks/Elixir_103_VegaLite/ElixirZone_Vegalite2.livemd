@@ -1,4 +1,4 @@
-# ElixirZone: Kino, VegaLite, and Explorer
+# ElixirZone: Kino, Nx, Explorer, and VegaLite
 
 ## Resource Links
 
@@ -106,7 +106,7 @@ Vega-Lite:
 
 ![Julia](images/JuliaLang.png)
 
-## Cool stuff I won't cover today
+## Cool related stuff I won't cover today
 
 ![PyTorch 2](images/PyTorch2.png)
 
@@ -145,6 +145,14 @@ Vega-Lite:
 <!-- livebook:{"break_markdown":true} -->
 
 ![Cocoa ThinkingElixir](images/Thinking_Elixir_Cocoa_Xu.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Axon 1](images/Axon1.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Axon 2](images/Axon2.png)
 
 ## Let's get started!
 
@@ -222,6 +230,10 @@ Kino.ETS.new(:my_ets)
 :ets.insert(:my_ets, {"867-5309", "Jenny"})
 ```
 
+```elixir
+:ets.insert(:my_ets, {"867-1111", "Bob"})
+```
+
 ## Kino.Ecto
 
 ```elixir
@@ -234,6 +246,7 @@ defmodule Muppet do
     field(:name, :string, null: false)
     field(:puppeteer, :string)
     field(:catchphrase, :string)
+    # field(:admin, :boolean)
   end
 
   def new(attrs) do
@@ -259,7 +272,7 @@ end
 ```
 
 ```elixir
-kermit = Muppet.new(%{name: "Kermit", puppeteer: "Jim Henson", catchphrase: "Hiyo!"})
+kermit = Muppet.new(%{name: "Kermit", puppeteer: "Jim Henson", catchphrase: "Hiyo!", admin: true})
 ```
 
 ```elixir
@@ -358,7 +371,7 @@ ff |> DataFrame.sample(0.01)
 ```
 
 ```elixir
-ff |> DataFrame.take([300, 301, 301])
+ff |> DataFrame.take([300, 301, 302])
 ```
 
 ```elixir
@@ -406,7 +419,7 @@ DataFrame.table(usa)
 ```
 
 ```elixir
-ff |> DataFrame.table()
+ff |> DataFrame.table(30)
 ```
 
 ```elixir
@@ -505,6 +518,10 @@ Vl.new(width: 400, height: 400)
 |> Vl.encode_field(:y, "score", type: :quantitative)
 |> Vl.encode_field(:color, "score", type: :quantitative)
 ```
+
+After recording this, I realized that I could/should have used `Enum.shuffle/1` instead of creating an anonymous function. I had looked for such a function but somehow missed it. Could have been:
+
+> random_values = fn -> 1..100 |> Enum.to_list() |> Enum.shuffle() end
 
 ```elixir
 random_values = fn ->
