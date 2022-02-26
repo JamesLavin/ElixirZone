@@ -1,0 +1,492 @@
+# NHL Games
+
+## Load data
+
+Data source: <https://www.kaggle.com/martinellis/nhl-game-data>
+
+```elixir
+Mix.install([
+  {:vega_lite, "~> 0.1.3"},
+  {:kino, "~> 0.5.0"},
+  {:jason, "~> 1.2"},
+  {:explorer, "~> 0.1.0-dev", github: "elixir-nx/explorer", branch: "main"}
+])
+```
+
+Aliases to reduce typing:
+
+```elixir
+alias Explorer.DataFrame, as: DF
+alias Explorer.Series, as: S
+alias Explorer.Datasets, as: DS
+```
+
+Relationships across tables:
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Table relationships](images/table_relationships.jpg)
+
+```elixir
+{:ok, games} = DF.read_csv("~/Data/NHL/game.csv")
+```
+
+```elixir
+DF.table(games)
+```
+
+```elixir
+{:ok, teams} = DF.read_csv("~/Data/NHL/team_info.csv")
+```
+
+```elixir
+DF.table(teams, 33)
+```
+
+```elixir
+kw_teams = teams |> DF.to_map() |> Keyword.new()
+```
+
+```elixir
+kw_teams[:abbreviation]
+|> Enum.zip(
+  Enum.zip([kw_teams[:shortName], kw_teams[:teamName]])
+  |> Enum.map(fn {x, y} -> x <> " " <> y end)
+)
+|> Enum.map(fn {abbrev, name} -> %{abbrev: abbrev, name: name} end)
+```
+
+```elixir
+DF.head(teams)
+```
+
+```elixir
+abbrvs = teams |> DF.select(["team_id", "abbreviation"])
+```
+
+```elixir
+abbrvs["abbreviation"]
+```
+
+```elixir
+home_teams = abbrvs |> DF.rename(team_id: "home_team_id") |> DF.rename(abbreviation: "home_team")
+```
+
+```elixir
+away_teams = abbrvs |> DF.rename(team_id: "away_team_id") |> DF.rename(abbreviation: "away_team")
+```
+
+```elixir
+games =
+  games
+  |> DF.join(away_teams)
+  |> DF.join(home_teams)
+  |> DF.mutate(home_goal_diff: &S.subtract(&1["home_goals"], &1["away_goals"]))
+```
+
+```elixir
+games
+|> DF.group_by("home_team")
+|> DF.summarise(home_goal_diff: [:min, :mean, :max], outcome: [:n_unique])
+```
+
+```elixir
+defmodule NHL.Games do
+  @game_data "~/Data/NHL/game.csv"
+  @teams_data "~/Data/NHL/team_info.csv"
+
+  def create_from_raw_data(game_data \\ @game_data, teams_data \\ @teams_data) do
+    {:ok, games} = DF.read_csv(game_data)
+    {:ok, teams} = DF.read_csv(teams_data)
+    abbrvs = teams |> DF.select(["team_id", "abbreviation"])
+
+    home_teams =
+      abbrvs |> DF.rename(team_id: "home_team_id") |> DF.rename(abbreviation: "home_team")
+
+    away_teams =
+      abbrvs |> DF.rename(team_id: "away_team_id") |> DF.rename(abbreviation: "away_team")
+
+    games
+    |> DF.join(away_teams)
+    |> DF.join(home_teams)
+    |> DF.mutate(home_goal_diff: &S.subtract(&1["home_goals"], &1["away_goals"]))
+  end
+
+  def home_mask(df, team_abbrv) do
+    df["home_team"] |> S.equal(team_abbrv) |> S.to_list()
+  end
+
+  def away_mask(df, team_abbrv) do
+    df["away_team"] |> S.equal(team_abbrv) |> S.to_list()
+  end
+
+  def filter_home_games(df, team_abbrv) do
+    df |> DF.filter(&S.equal(&1["home_team"], team_abbrv))
+  end
+
+  def filter_away_games(df, team_abbrv) do
+    df |> DF.filter(&S.equal(&1["away_team"], team_abbrv))
+  end
+end
+```
+
+```elixir
+games = NHL.Games.create_from_raw_data()
+```
+
+```elixir
+# bos_home_mask = games["home_team"] |> S.equal("BOS") |> S.to_list()
+# bos_home_mask = games |> NHL.Games.home_mask("BOS")
+```
+
+```elixir
+# bos_home_games = games |> DF.filter(&S.equal(&1["home_team"], "BOS"))
+bos_home_games = games |> NHL.Games.filter_home_games("BOS")
+```
+
+```elixir
+# buf_home_games = games |> DF.filter(&S.equal(&1["home_team"], "BUF"))
+buf_home_games = games |> NHL.Games.filter_home_games("BUF")
+```
+
+```elixir
+# mtl_home_games = games |> DF.filter(&S.equal(&1["home_team"], "MTL"))
+mtl_home_games = games |> NHL.Games.filter_home_games("MTL")
+```
+
+```elixir
+bruins_canadiens_sabres = DF.concat_rows([mtl_home_games, bos_home_games, buf_home_games])
+```
+
+```elixir
+dat = bruins_canadiens_sabres |> DF.to_map() |> Keyword.new()
+```
+
+First and last games:
+
+```elixir
+dat
+|> Keyword.fetch!(:date_time_GMT)
+|> Enum.sort()
+|> (fn list -> %{first_game: List.first(list), last_game: List.last(list)} end).()
+```
+
+```elixir
+alias VegaLite, as: Vl
+```
+
+```elixir
+outcomes = games |> DF.select(["outcome"]) |> DF.to_map() |> Keyword.new()
+```
+
+Based on <https://vega.github.io/vega-lite/examples/histogram.html>
+
+```elixir
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(outcomes)
+|> Vl.mark(:bar, filled: true)
+|> Vl.encode_field(:x, "outcome", type: :nominal)
+|> Vl.encode_field(:y, "outcome", aggregate: :count)
+```
+
+```elixir
+mtl_dat = mtl_home_games |> DF.to_map() |> Keyword.new()
+
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(mtl_dat)
+|> Vl.mark(:point, filled: true, tooltip: %{content: "data"})
+|> Vl.encode_field(:x, "away_goals", type: :quantitative)
+|> Vl.encode_field(:y, "home_goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "home_team", type: :nominal)
+```
+
+```elixir
+bos_dat = bos_home_games |> DF.to_map() |> Keyword.new()
+
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(bos_dat)
+|> Vl.mark(:point, filled: true, tooltip: %{content: "data"})
+|> Vl.encode_field(:x, "away_goals", type: :quantitative)
+|> Vl.encode_field(:y, "home_goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "home_team", type: :nominal)
+```
+
+Based on <https://vega.github.io/vega-lite/examples/circle_binned.html>:
+
+```elixir
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(dat)
+|> Vl.mark(:circle, filled: true, tooltip: %{content: "data"})
+|> Vl.encode_field(:x, "away_goals", type: :quantitative)
+|> Vl.encode_field(:y, "home_goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "home_team", type: :nominal)
+```
+
+```elixir
+{:ok, game_teams_stats} = DF.read_csv("~/Data/NHL/game_teams_stats.csv")
+```
+
+```elixir
+defmodule NHL.GameTeam do
+  def create_from_raw_data() do
+    games = NHL.Games.create_from_raw_data()
+
+    raw_game_teams_stats = create_raw_table_from_raw_data()
+
+    home_game_teams_stats = raw_game_teams_stats |> filter_home_games()
+
+    away_game_teams_stats = raw_game_teams_stats |> filter_away_games()
+
+    home =
+      home_game_teams_stats
+      |> DF.rename(team_id: "home_team_id")
+      |> DF.join(games, how: :inner)
+
+    away =
+      away_game_teams_stats
+      |> DF.rename(team_id: "away_team_id")
+      |> DF.join(games, how: :inner)
+
+    DF.concat_rows(home, away)
+  end
+
+  defp create_raw_table_from_raw_data() do
+    {:ok, game_teams_stats} = DF.read_csv("~/Data/NHL/game_teams_stats.csv")
+    game_teams_stats
+  end
+
+  def home_mask(df) do
+    df["HoA"] |> S.equal("home")
+  end
+
+  def away_mask(df) do
+    df["HoA"] |> S.equal("away")
+  end
+
+  def filter_home_games(df) do
+    df |> DF.filter(&S.equal(&1["HoA"], "home"))
+  end
+
+  def filter_away_games(df) do
+    df |> DF.filter(&S.equal(&1["HoA"], "away"))
+  end
+end
+```
+
+```elixir
+home_game_teams_stats =
+  game_teams_stats
+  |> NHL.GameTeam.filter_home_games()
+
+# |> DF.rename(team_id: "home_team_id")
+```
+
+```elixir
+away_game_teams_stats =
+  game_teams_stats
+  |> NHL.GameTeam.filter_away_games()
+
+# |> DF.rename(team_id: "away_team_id")
+```
+
+```elixir
+all_game_teams_stats = DF.concat_rows([away_game_teams_stats, home_game_teams_stats])
+```
+
+```elixir
+all_vl = all_game_teams_stats |> DF.to_map() |> Keyword.new()
+```
+
+```elixir
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(all_vl)
+|> Vl.mark(:circle, opacity: 0.5)
+|> Vl.encode_field(:x, "shots", type: :quantitative)
+|> Vl.encode_field(:y, "goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "won", type: :nominal)
+```
+
+```elixir
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(all_vl)
+|> Vl.mark(:circle, opacity: 0.5)
+|> Vl.encode_field(:x, "pim", type: :quantitative)
+|> Vl.encode_field(:y, "goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "won", type: :nominal)
+```
+
+```elixir
+home =
+  home_game_teams_stats
+  |> DF.rename(team_id: "home_team_id")
+  |> DF.join(games, how: :inner)
+```
+
+```elixir
+away =
+  away_game_teams_stats
+  |> DF.rename(team_id: "away_team_id")
+  |> DF.join(games, how: :inner)
+```
+
+```elixir
+# all = DF.concat_rows(home, away)
+all = NHL.GameTeam.create_from_raw_data()
+```
+
+```elixir
+shots_pim_won = all |> DF.select(["shots", "pim", "won"]) |> DF.to_map() |> Keyword.new()
+
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(shots_pim_won)
+|> Vl.mark(:rect)
+|> Vl.encode_field(:x, "shots", type: :ordinal)
+|> Vl.encode_field(:y, "pim", type: :ordinal, sort: :descending)
+# |> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, aggregate: :mean, field: "won")
+
+# |> Vl.config(axis: [{:grid, true}, {:tickBand, :extent}])
+```
+
+```elixir
+# all |> DF.filter(&S.equal(&1["home_team"], "BOS")) |> DF.select(["goals", "home_goals"])
+```
+
+```elixir
+home_goal_diffs =
+  all
+  |> DF.group_by(["home_team"])
+  |> DF.summarise(home_goal_diff: [:mean])
+  |> DF.arrange(desc: :home_goal_diff_mean)
+  |> DF.to_map()
+  |> Keyword.new()
+
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(home_goal_diffs)
+|> Vl.mark(:bar, filled: true)
+|> Vl.encode_field(:x, "home_team", type: :nominal)
+|> Vl.encode_field(:y, "home_goal_diff_mean", type: :quantitative)
+```
+
+```elixir
+away_goal_diffs =
+  all
+  |> DF.group_by(["away_team"])
+  |> DF.summarise(home_goal_diff: [:mean])
+  |> DF.arrange(desc: :home_goal_diff_mean)
+  |> DF.to_map()
+  |> Keyword.new()
+
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(away_goal_diffs)
+|> Vl.mark(:bar, filled: true)
+|> Vl.encode_field(:x, "away_team", type: :nominal)
+|> Vl.encode_field(:y, "home_goal_diff_mean", type: :quantitative)
+```
+
+```elixir
+home =
+  home_goal_diffs
+  |> Enum.map(fn
+    {:home_team, ht} -> {:team, ht}
+    {:home_goal_diff_mean, diff} -> {:home_goal_diff_mean, diff}
+  end)
+  |> Enum.into(%{})
+  |> DF.from_map()
+```
+
+```elixir
+away =
+  away_goal_diffs
+  |> Enum.map(fn
+    {:away_team, at} -> {:team, at}
+    {:home_goal_diff_mean, diff} -> {:away_goal_diff_mean, diff |> Enum.map(fn v -> -v end)}
+  end)
+  |> Enum.into(%{})
+  |> DF.from_map()
+```
+
+```elixir
+home_away = DF.join(home, away)
+```
+
+```elixir
+home_away_dat = home_away |> DF.to_map() |> Keyword.new()
+```
+
+```elixir
+Vl.new(width: 600, height: 600)
+|> Vl.data_from_series(home_away_dat)
+|> Vl.mark(:point, tooltip: true)
+|> Vl.encode_field(:x, "home_goal_diff_mean", type: :quantitative)
+|> Vl.encode_field(:y, "away_goal_diff_mean", type: :quantitative)
+|> Vl.encode_field(:color, "team", type: :nominal)
+```
+
+```elixir
+all |> DF.filter(&S.equal(&1["game_id"], 2_016_020_045))
+```
+
+```elixir
+vl_all = all |> DF.to_map() |> Keyword.new()
+```
+
+```elixir
+defmodule Regression do
+  @doc """
+  E.g.:
+  x1 = [1, 2, 3, 4]
+  x2 = [1, 2, 3, 5]
+  """
+  def bivariate(y, x1, x2)
+      when is_list(y) and is_list(x1) and is_list(x2) and length(x1) == length(x2) do
+    %{y: y, x1: x1, x2: x2} = remove_nils(y, x1, x2)
+    x0 = List.duplicate(1, length(x1))
+    x = Nx.tensor([x0, x1, x2]) |> Nx.transpose()
+    y = Nx.tensor(y)
+    x_prime_x = Nx.dot(Nx.transpose(x), x)
+    x_prime_y = Nx.dot(Nx.transpose(x), y)
+    b_hat = Nx.dot(Nx.LinAlg.invert(x_prime_x), x_prime_y)
+    y_hat = Nx.dot(x, b_hat)
+    %{b_hat: b_hat, y_hat: y_hat}
+  end
+
+  def remove_nils(y, x1, x2) do
+    [y, x1, x2]
+    |> Enum.zip()
+    |> Enum.reduce(
+      %{y: [], x1: [], x2: []},
+      fn
+        {y_val, x1_val, x2_val}, acc when is_nil(y_val) or is_nil(x1_val) or is_nil(x2_val) ->
+          acc
+
+        {y_val, x1_val, x2_val}, %{y: ys, x1: x1s, x2: x2s} ->
+          %{y: [y_val | ys], x1: [x1_val | x1s], x2: [x2_val | x2s]}
+      end
+    )
+    |> (fn %{y: ys, x1: x1s, x2: x2s} ->
+          %{y: ys |> Enum.reverse(), x1: x1s |> Enum.reverse(), x2: x2s |> Enum.reverse()}
+        end).()
+  end
+end
+```
+
+```elixir
+Regression.bivariate(vl_all[:goals], vl_all[:shots], vl_all[:powerPlayOpportunities])
+```
+
+```elixir
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(vl_all)
+|> Vl.transform(filter: "datum.home_team == 'BOS'")
+|> Vl.mark(:point, filled: true)
+|> Vl.encode_field(:x, "shots", type: :quantitative)
+|> Vl.encode_field(:y, "goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "won", type: :nominal)
+```
