@@ -143,6 +143,7 @@ defmodule NHL.Games do
         resp = NaiveDateTime.from_iso8601(s)
 
         case resp do
+          # I'd rather keep these as NaiveDateTimes, but that causes problems
           {:ok, dt, _} -> dt
           {:ok, dt} -> dt
           other -> IO.inspect(other, label: "unprocessable")
@@ -150,8 +151,18 @@ defmodule NHL.Games do
       end)
       |> S.from_list()
 
-    games
-    |> DF.mutate(date_time_GMT: new_dt)
+    games =
+      games
+      |> DF.mutate(date_time_GMT: new_dt)
+
+    new_date_string =
+      games["date_time_GMT"]
+      |> S.to_list()
+      |> Enum.map(fn dt ->
+        dt |> NaiveDateTime.to_date() |> Date.to_string()
+      end)
+
+    games |> DF.mutate(date: new_date_string)
 
     # |> DF.mutate(date_time_GMT: &S.cast(&1["date_time_GMT"], :datetime))
     # |> DF.mutate(date_time_GMT: &S.cast(&1["date_time_GMT"], :date))
@@ -218,7 +229,7 @@ bos =
     |> Enum.map(&Date.to_string/1)
   )
 
-Vl.new(height: 600, width: 600)
+Vl.new(height: 600, width: 1200)
 |> Vl.data_from_series(bos)
 |> Vl.mark(:point)
 |> Vl.encode_field(:x, "date_time_GMT", type: :temporal)
@@ -243,7 +254,7 @@ bos_201819 =
     |> Enum.map(&Date.to_string/1)
   )
 
-Vl.new(height: 600, width: 600)
+Vl.new(height: 600, width: 1200)
 |> Vl.data_from_series(bos_201819)
 |> Vl.mark(:point, tooltip: %{content: "data"})
 |> Vl.encode_field(:x, "date_time_GMT", type: :temporal)
@@ -252,29 +263,34 @@ Vl.new(height: 600, width: 600)
 
 ```elixir
 # buf_home_games = games |> DF.filter(&S.equal(&1["home_team"], "BUF"))
-buf_home_games = games |> NHL.Games.filter_home_games("BUF")
+# buf_home_games = games |> NHL.Games.filter_home_games("BUF")
 ```
 
 ```elixir
 # mtl_home_games = games |> DF.filter(&S.equal(&1["home_team"], "MTL"))
-mtl_home_games = games |> NHL.Games.filter_home_games("MTL")
+# mtl_home_games = games |> NHL.Games.filter_home_games("MTL")
 ```
 
 ```elixir
-bruins_canadiens_sabres = DF.concat_rows([mtl_home_games, bos_home_games, buf_home_games])
+# bruins_canadiens_sabres = DF.concat_rows([mtl_home_games, bos_home_games, buf_home_games])
 ```
 
 ```elixir
-dat = bruins_canadiens_sabres |> DF.to_map() |> Keyword.new()
+# dat = bruins_canadiens_sabres |> DF.to_map() |> Keyword.new()
 ```
 
 First and last games:
 
 ```elixir
-dat
-|> Keyword.fetch!(:date_time_GMT)
-|> Enum.sort()
-|> (fn list -> %{first_game: List.first(list), last_game: List.last(list)} end).()
+sorted = games["date_time_GMT"] |> S.sort() |> S.to_list()
+%{first_game: sorted |> List.first(), last_game: sorted |> List.last()}
+```
+
+```elixir
+# dat
+# |> Keyword.fetch!(:date_time_GMT)
+# |> Enum.sort()
+# |> (fn list -> %{first_game: List.first(list), last_game: List.last(list)} end).()
 ```
 
 ```elixir
@@ -292,19 +308,22 @@ Vl.new(height: 600, width: 600)
 ```
 
 ```elixir
-mtl_dat = mtl_home_games |> DF.to_map() |> Keyword.new()
-
-Vl.new(height: 600, width: 600)
-|> Vl.data_from_series(mtl_dat)
-|> Vl.mark(:point, filled: true, tooltip: %{content: "data"})
-|> Vl.encode_field(:x, "away_goals", type: :quantitative)
-|> Vl.encode_field(:y, "home_goals", type: :quantitative)
-|> Vl.encode(:size, aggregate: :count)
-|> Vl.encode(:color, field: "home_team", type: :nominal)
+# mtl_dat = mtl_home_games |> DF.to_map() |> Keyword.new()
+# Vl.new(height: 600, width: 600)
+# |> Vl.data_from_series(mtl_dat)
+# |> Vl.mark(:point, filled: true, tooltip: %{content: "data"})
+# |> Vl.encode_field(:x, "away_goals", type: :quantitative)
+# |> Vl.encode_field(:y, "home_goals", type: :quantitative)
+# |> Vl.encode(:size, aggregate: :count)
+# |> Vl.encode(:color, field: "home_team", type: :nominal)
 ```
 
 ```elixir
-bos_dat = bos_home_games |> DF.to_map() |> Keyword.new()
+bos_dat =
+  bos_games
+  |> DF.select(["away_goals", "home_goals", "home_team"])
+  |> DF.to_map()
+  |> Keyword.new()
 
 Vl.new(height: 600, width: 600)
 |> Vl.data_from_series(bos_dat)
@@ -318,17 +337,39 @@ Vl.new(height: 600, width: 600)
 Based on <https://vega.github.io/vega-lite/examples/circle_binned.html>:
 
 ```elixir
-Vl.new(height: 600, width: 600)
-|> Vl.data_from_series(dat)
-|> Vl.mark(:circle, filled: true, tooltip: %{content: "data"})
-|> Vl.encode_field(:x, "away_goals", type: :quantitative)
-|> Vl.encode_field(:y, "home_goals", type: :quantitative)
-|> Vl.encode(:size, aggregate: :count)
-|> Vl.encode(:color, field: "home_team", type: :nominal)
+# {:ok, game_teams_stats} = DF.read_csv("~/Data/NHL/game_teams_stats.csv")
 ```
 
 ```elixir
-{:ok, game_teams_stats} = DF.read_csv("~/Data/NHL/game_teams_stats.csv")
+# home_game_teams_stats = game_teams_stats
+# |> NHL.GameTeam.filter_home_games()
+# # |> DF.rename(team_id: "home_team_id")
+```
+
+```elixir
+# away_game_teams_stats = game_teams_stats
+# |> NHL.GameTeam.filter_away_games()
+# # |> DF.rename(team_id: "away_team_id")
+```
+
+```elixir
+# all_game_teams_stats = DF.concat_rows([away_game_teams_stats, home_game_teams_stats])
+```
+
+```elixir
+# all_vl = all_game_teams_stats |> DF.to_map() |> Keyword.new()
+```
+
+```elixir
+# home = home_game_teams_stats
+# |> DF.rename(team_id: "home_team_id")
+# |> DF.join(games, how: :inner)
+```
+
+```elixir
+# away = away_game_teams_stats
+# |> DF.rename(team_id: "away_team_id")
+# |> DF.join(games, how: :inner)
 ```
 
 ```elixir
@@ -379,42 +420,38 @@ end
 ```
 
 ```elixir
-home_game_teams_stats =
-  game_teams_stats
-  |> NHL.GameTeam.filter_home_games()
-
-# |> DF.rename(team_id: "home_team_id")
+# all = DF.concat_rows(home, away)
+all = NHL.GameTeam.create_from_raw_data()
 ```
 
 ```elixir
-away_game_teams_stats =
-  game_teams_stats
-  |> NHL.GameTeam.filter_away_games()
+# Some day, this shouldn't be necessary, but it seems necessary presently to work
+# around an apparent limitation with DateTimes
 
-# |> DF.rename(team_id: "away_team_id")
+# all = all
+#   |> DF.mutate(date_time_GMT: &S.cast(&1["date_time_GMT"], :date))
+
+# dt = all
+# |> DF.select(["date_time_GMT"])
+# |> DF.to_map()
+# |> Keyword.new()
+# |> Keyword.get(:date_time_GMT)
+
+# dt_as_string_series = dt
+# |> Enum.map(&Date.to_string/1)
+# |> S.from_list()
+
+# all = all
+# |> DF.mutate(date_time_GMT: dt_as_string_series)
 ```
 
 ```elixir
-all_game_teams_stats = DF.concat_rows([away_game_teams_stats, home_game_teams_stats])
-```
-
-```elixir
-all_vl = all_game_teams_stats |> DF.to_map() |> Keyword.new()
-```
-
-```elixir
-Vl.new(height: 600, width: 600)
-|> Vl.data_from_series(all_vl)
-|> Vl.mark(:circle, opacity: 0.5)
-|> Vl.encode_field(:x, "shots", type: :quantitative)
-|> Vl.encode_field(:y, "goals", type: :quantitative)
-|> Vl.encode(:size, aggregate: :count)
-|> Vl.encode(:color, field: "won", type: :nominal)
+all_kw = all |> DF.to_map() |> Keyword.new() |> Keyword.drop([:date_time_GMT])
 ```
 
 ```elixir
 Vl.new(height: 600, width: 600)
-|> Vl.data_from_series(all_vl)
+|> Vl.data_from_series(all_kw)
 |> Vl.mark(:circle, opacity: 0.5)
 |> Vl.encode_field(:x, "pim", type: :quantitative)
 |> Vl.encode_field(:y, "goals", type: :quantitative)
@@ -423,22 +460,23 @@ Vl.new(height: 600, width: 600)
 ```
 
 ```elixir
-home =
-  home_game_teams_stats
-  |> DF.rename(team_id: "home_team_id")
-  |> DF.join(games, how: :inner)
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(all_kw)
+|> Vl.mark(:circle, filled: true, tooltip: %{content: "data"})
+|> Vl.encode_field(:x, "away_goals", type: :quantitative)
+|> Vl.encode_field(:y, "home_goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "home_team", type: :nominal)
 ```
 
 ```elixir
-away =
-  away_game_teams_stats
-  |> DF.rename(team_id: "away_team_id")
-  |> DF.join(games, how: :inner)
-```
-
-```elixir
-# all = DF.concat_rows(home, away)
-all = NHL.GameTeam.create_from_raw_data()
+Vl.new(height: 600, width: 600)
+|> Vl.data_from_series(all_kw)
+|> Vl.mark(:circle, opacity: 0.5)
+|> Vl.encode_field(:x, "shots", type: :quantitative)
+|> Vl.encode_field(:y, "goals", type: :quantitative)
+|> Vl.encode(:size, aggregate: :count)
+|> Vl.encode(:color, field: "won", type: :nominal)
 ```
 
 ```elixir
@@ -535,8 +573,18 @@ all |> DF.filter(&S.equal(&1["game_id"], 2_016_020_045))
 ```
 
 ```elixir
-vl_all = all |> DF.to_map() |> Keyword.new()
+# vl_all = all |> DF.to_map() |> Keyword.new()
 ```
+
+![yXBe2](images/yXBe2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![y = XB + e](images/yXBe.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![beta_hat](images/beta_hat.png)
 
 ```elixir
 defmodule Regression do
@@ -547,7 +595,7 @@ defmodule Regression do
   """
   def bivariate(y, x1, x2)
       when is_list(y) and is_list(x1) and is_list(x2) and length(x1) == length(x2) do
-    %{y: y, x1: x1, x2: x2} = remove_nils(y, x1, x2)
+    %{y: y, x1: x1, x2: x2} = remove_observations_with_nils(y, x1, x2)
     x0 = List.duplicate(1, length(x1))
     x = Nx.tensor([x0, x1, x2]) |> Nx.transpose()
     y = Nx.tensor(y)
@@ -558,7 +606,7 @@ defmodule Regression do
     %{b_hat: b_hat, y_hat: y_hat}
   end
 
-  def remove_nils(y, x1, x2) do
+  def remove_observations_with_nils(y, x1, x2) do
     [y, x1, x2]
     |> Enum.zip()
     |> Enum.reduce(
@@ -579,12 +627,12 @@ end
 ```
 
 ```elixir
-Regression.bivariate(vl_all[:goals], vl_all[:shots], vl_all[:powerPlayOpportunities])
+Regression.bivariate(all_kw[:goals], all_kw[:shots], all_kw[:powerPlayOpportunities])
 ```
 
 ```elixir
 Vl.new(height: 600, width: 600)
-|> Vl.data_from_series(vl_all)
+|> Vl.data_from_series(all_kw)
 |> Vl.transform(filter: "datum.home_team == 'BOS'")
 |> Vl.mark(:point, filled: true)
 |> Vl.encode_field(:x, "shots", type: :quantitative)
