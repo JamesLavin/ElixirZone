@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Untitled notebook
+# PlotMath (using VegaLite.push)
 
 ## Section
 
@@ -54,7 +54,8 @@ defmodule PlotMath do
   end
 
   def calc_xs(x_min, x_max, precision) do
-    # e.g., -6.2..6.2
+    # e.g., to plot these points: [-6.2, -6.1, -6.0, ..., 5.9, 6.0, 6.1, 6.2],
+    #       you would call `calc_xs(-6.2, 6.2, 10)`
     x_min_int = (x_min * precision) |> Kernel.floor()
     x_max_int = (x_max * precision) |> Kernel.ceil()
 
@@ -103,7 +104,7 @@ end
 ```
 
 ```elixir
-PlotMath.plot_fun(&:math.sin(&1))
+PlotMath.plot_fun(&:math.sin(&1), sleep_ms: 10)
 nil
 ```
 

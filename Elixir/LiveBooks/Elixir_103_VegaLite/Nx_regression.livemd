@@ -81,12 +81,15 @@ target_m = (:rand.uniform_real() * 10) |> IO.inspect(label: "actual target_m")
 target_b = (:rand.uniform_real() * 10) |> IO.inspect(label: "actual target_b")
 target_fn = fn x -> target_m * x + target_b end
 
+# Function to generate a list of 32 random uniform variables between 0.0 and 10.0
+thirty_two = fn -> for _ <- 1..32, do: :rand.uniform() * 10 end
+
 # Function to generate lists containing 32 two-element tuples with
-#    first element a random normal variable between 0.0 and 10.0
+#    first element a random uniform variables between 0.0 and 10.0
 #    second element the result of calling `target_fn` with the first tuple element as `x`
 # In other words, 32 tuples of {`x`, `target_m` * `x` + `target_b`}
 data =
-  Stream.repeatedly(fn -> for _ <- 1..32, do: :rand.uniform() * 10 end)
+  Stream.repeatedly(fn -> thirty_two.() end)
   |> Stream.map(fn x -> Enum.zip(x, Enum.map(x, target_fn)) end)
 ```
 
@@ -137,7 +140,7 @@ data2 =
 
 ```elixir
 data2
-|> Enum.take(1)
+|> Enum.take(2)
 ```
 
 ```elixir
@@ -211,6 +214,7 @@ x = Nx.tensor([[1, 1, 1], [1, 2, 2], [1, 3, 3], [1, 4, 5]])
 
 b = Nx.tensor([2, 5, 7])
 
+# Xb
 y = Nx.dot(x, b)
 ```
 
