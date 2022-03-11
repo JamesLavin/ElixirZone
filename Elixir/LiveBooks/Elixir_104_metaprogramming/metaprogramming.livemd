@@ -1,0 +1,135 @@
+# Metaprogramming Elixir (ElixirZone - James Lavin)
+
+## Simple addition
+
+
+
+```elixir
+quote do: 17 + 18
+```
+
+```elixir
+quote(do: 17 + 18) |> Code.eval_quoted()
+```
+
+```elixir
+quote(do: 17 + 18) |> Code.eval_quoted() |> elem(0)
+```
+
+```elixir
+quote do: 7 + 8
+```
+
+```elixir
+[7, 8]
+```
+
+```elixir
+'\a\b' == [7, 8]
+```
+
+```elixir
+{:+, [context: Elixir, import: Kernel], [7, 8]} ==
+  {:+, [context: Elixir, import: Kernel], '\a\b'}
+```
+
+```elixir
+quote(do: 357 + 9) |> Code.eval_quoted()
+```
+
+## Repeated addition
+
+```elixir
+quote do
+  1 + 2 + 3 + 4 + 5 + 6
+end
+|> IO.inspect()
+```
+
+## Variables & macro hygeine
+
+```elixir
+quote do
+  x
+end
+```
+
+Whatever happened outside `quote` is invisible inside `quote`
+
+```elixir
+x = 3
+
+quote do
+  x
+end
+```
+
+To explicitly pull values from outside `quote` into it, you can use `unquote/1`:
+
+```elixir
+x = 3
+
+quote do
+  unquote(x)
+end
+```
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  unquote(x) + unquote(y)
+end
+```
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  unquote(x) + unquote(y)
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  x = unquote(x)
+  y = unquote(y)
+  x = x * x
+  y = y * y
+  x + y
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+What happens inside `quote` stays inside `quote`.
+
+`x` and `y` are still `3` and `4`, not `9` and `16`
+
+```elixir
+%{x: x, y: y}
+```
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  var!(x) = unquote(x) * unquote(x)
+  var!(y) = unquote(y) * unquote(y)
+  var!(x) + var!(y)
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+```elixir
+%{x: x, y: y}
+```
