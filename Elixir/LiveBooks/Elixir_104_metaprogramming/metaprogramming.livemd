@@ -1,20 +1,31 @@
 # Metaprogramming Elixir (ElixirZone - James Lavin)
 
-## Simple addition
+## Kernel.SpecialForms.quote(opts, block)
 
+Metaprogramming is writing code that creates other code.
 
+`quote/2` transforms Elixir code into an Elixir AST (abstract syntax tree).
+
+Manipulating Elixir AST lets us interact with the code-generation process in a manner impossible in most languages.
+
+For example, `Logger` can inspect code at compilation time and completely remove debugging code intended only to run in `dev` mode.
+
+Another example: we can use macros to create DSLs (domain-specific languages), as `Ecto` and `Phoenix` do.
+
+We can also create new "language primitives 'missing' from Elixir," like `while`. Elixir primitives like `defmodule`, `def`, and `if` are all macros, not ordinary functions.
 
 ```elixir
 quote do: 17 + 18
 ```
 
-```elixir
-quote(do: 17 + 18) |> Code.eval_quoted()
-```
+Structure of this 3-element tuple:
+`{function call, context, [arguments]}`
 
-```elixir
-quote(do: 17 + 18) |> Code.eval_quoted() |> elem(0)
-```
+All AST expressions have this shape
+
+<!-- livebook:{"break_markdown":true} -->
+
+`17 + 18` is syntactic sugar for `Kernel.*(17,18)`, which is why the AST has `:*` as the function, `[context: Elixir, import: Kernel]` as the context, and `[17, 18]` as arguments
 
 ```elixir
 quote do: 7 + 8
@@ -34,10 +45,107 @@ quote do: 7 + 8
 ```
 
 ```elixir
+quote do: [1000, 1001, 1002]
+```
+
+## Weird display of charlists (character lists)
+
+```elixir
+quote do: [101, 102, 103]
+```
+
+```elixir
+'efg' == [101, 102, 103]
+```
+
+```elixir
+# character list (from Erlang) != string (from Elixir)
+'efg' == "efg"
+```
+
+```elixir
+"efg" |> IEx.Info.info()
+```
+
+```elixir
+'efg' |> IEx.Info.info()
+```
+
+```elixir
+[1000, 1001, 1002] |> IEx.Info.info()
+```
+
+## AST literals
+
+```elixir
+33 == quote do: 33
+```
+
+```elixir
+"thirty-three" == quote do: "thirty-three"
+```
+
+```elixir
+:thirty_three == quote do: :thirty_three
+```
+
+```elixir
+[33] == quote do: [33]
+```
+
+```elixir
+{:ok, 33} == quote do: {:ok, 33}
+```
+
+## Some Elixir types that aren't passed through to AST unmodified
+
+```elixir
+quote do: %{cat: "bad", dog: "good"}
+```
+
+```elixir
+# tuples with > 2 elements
+quote do: {1, 2, 3}
+```
+
+```elixir
+quote do: Code
+```
+
+```elixir
+# special atom: Module name
+
+defmodule SampleModule do
+end
+
+SampleModule == :"Elixir.SampleModule"
+
+quote do: SampleModule
+```
+
+```elixir
+quote do: :"Elixir.SampleModule"
+```
+
+## Code.eval_quoted(quoted, binding, opts)
+
+```elixir
+quote(do: 17 + 18) |> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  17 + 18
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+```elixir
 quote(do: 357 + 9) |> Code.eval_quoted()
 ```
 
-## Repeated addition
+## Deeply nested AST
 
 ```elixir
 quote do
@@ -45,6 +153,8 @@ quote do
 end
 |> IO.inspect()
 ```
+
+An Elixir program in its AST representation is a large (but structurally simple) tree of nested 3-element tuples
 
 ## Variables & macro hygeine
 
@@ -127,9 +237,57 @@ quote do
   var!(x) + var!(y)
 end
 |> Code.eval_quoted()
-|> elem(0)
 ```
 
 ```elixir
 %{x: x, y: y}
 ```
+
+## Macros
+
+Very heavily inspired by p. 6 of Chris McCord's "Metaprogramming Elixir"
+
+<!-- livebook:{"break_markdown":true} -->
+
+Chris writes "Rule 1: Don't Write Macros" because "macros can make programs difficult to debug and reason about."
+
+<!-- livebook:{"break_markdown":true} -->
+
+Macros receive AST and return AST. In other words, macros transform ASTs
+
+```elixir
+defmodule LogMath do
+  defmacro log({:+, ctx, [left_arg, right_arg]}) do
+    quote do
+      require Logger
+      left = unquote(left_arg)
+      right = unquote(right_arg)
+      Logger.debug("received '#{left} + #{right}'")
+      unquote(ctx) |> IO.inspect()
+      left + right
+    end
+  end
+end
+```
+
+When this code is compiled, `111 + 222` will be converted to AST -- `{:+, [context: Elixir, import: Kernel], [111, 222]}` -- and passed into `LogMath.log()`:
+
+```elixir
+require LogMath
+
+(111 + 222)
+|> LogMath.log()
+```
+
+```elixir
+quote do
+  333 + 444
+end
+|> LogMath.log()
+```
+
+Why can't I pattern match against `[import: Kernel, context: Elixir]`???
+
+<!-- livebook:{"break_markdown":true} -->
+
+![unless](images/unless.png)
