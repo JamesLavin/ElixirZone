@@ -109,6 +109,18 @@ quote do: {1, 2, 3}
 ```
 
 ```elixir
+quote do: true and false
+```
+
+```elixir
+quote do: !true
+```
+
+```elixir
+quote do: x in [1, 2]
+```
+
+```elixir
 quote do: Code
 ```
 
@@ -231,11 +243,21 @@ What happens inside `quote` stays inside `quote`.
 x = 3
 y = 4
 
-quote do
-  var!(x) = unquote(x) * unquote(x)
-  var!(y) = unquote(y) * unquote(y)
-  var!(x) + var!(y)
+defmodule MyMultiply do
+  defmacro mult(x, y) do
+    quote do
+      var!(x) = unquote(x) * unquote(x)
+      var!(y) = unquote(y) * unquote(y)
+      var!(x) + var!(y)
+    end
+  end
 end
+```
+
+```elixir
+require MyMultiply
+
+MyMultiply.mult(x, y)
 |> Code.eval_quoted()
 ```
 
@@ -288,6 +310,56 @@ end
 
 Why can't I pattern match against `[import: Kernel, context: Elixir]`???
 
-<!-- livebook:{"break_markdown":true} -->
+## Unless & navigating Elixir documentation
 
 ![unless](images/unless.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![unless2](images/unless2.png)
+
+## Macros receive the AST representations of their arguments
+
+```elixir
+quote do: %{a: 1, b: 2}
+```
+
+```elixir
+defmodule MyMerge do
+  defmacro display({:%{}, [], _kwlist}) do
+    quote do
+      17
+    end
+  end
+
+  # defmacro merge(first, _second) do
+  #  quote do
+  #    unquote(first)
+  #  end
+  # end
+  defmacro merge({:%{}, [], first_kv_pairs}, {:%{}, [], second_kv_pairs}) do
+    quote do
+      first_map = unquote(first_kv_pairs) |> Enum.into(%{})
+      second_map = unquote(second_kv_pairs) |> Enum.into(%{})
+      Map.merge(first_map, second_map)
+    end
+  end
+end
+```
+
+```elixir
+require MyMerge
+
+MyMerge.display(%{})
+# (quote do: %{}) |> MyMerge.display()
+```
+
+```elixir
+require MyMerge
+
+first = quote do: %{a: 1, b: 2}
+
+second = quote do: %{c: 3, d: 4}
+
+MyMerge.merge(first, second)
+```
