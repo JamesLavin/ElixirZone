@@ -48,7 +48,7 @@ quote do: 7 + 8
 quote do: [1000, 1001, 1002]
 ```
 
-## Weird display of charlists (character lists)
+## (Aside) Weird display of charlists (character lists)
 
 ```elixir
 quote do: [101, 102, 103]
@@ -186,7 +186,7 @@ quote do
 end
 ```
 
-To explicitly pull values from outside `quote` into it, you can use `unquote/1`:
+To explicitly pull values from outside `quote` into it (at compile time), you can use `unquote/1`:
 
 ```elixir
 x = 3
@@ -194,6 +194,25 @@ x = 3
 quote do
   unquote(x)
 end
+```
+
+To explicitly pull values from outside `quote` into it (at runtime), you can use `var!/1`.
+
+Here I'm also passing in an optional keyword list for use only when evaluating this particular quoted expression:
+
+```elixir
+Code.eval_quoted(
+  quote do
+    var!(x)
+  end,
+  x: 17
+)
+```
+
+The above has NOT changed the value of `x` outside of the quoted expression:
+
+```elixir
+x
 ```
 
 ```elixir
@@ -239,6 +258,10 @@ What happens inside `quote` stays inside `quote`.
 %{x: x, y: y}
 ```
 
+## Break macro hygeine at runtime with var!/1
+
+If you *want* your macro to modify a variable's value outside the macro, you can do so by assigning to `var!(x)`:
+
 ```elixir
 x = 3
 y = 4
@@ -254,12 +277,60 @@ defmodule MyMultiply do
 end
 ```
 
+The return value is still 25:
+
 ```elixir
 require MyMultiply
 
 MyMultiply.mult(x, y)
 |> Code.eval_quoted()
 ```
+
+But we have now permanently changed the values bound to the variables `x` and `y` in the scope outside the macro:
+
+```elixir
+%{x: x, y: y}
+```
+
+## quote bind_quoted
+
+In the above example, we called `unquote(x)` twice and `unquote(y)` twice.
+
+This is a bad practice. One reason why is inefficiency. More importantly, if the parameter passed into `unquote/1` is an impure function, you will be evaluating it multiple times.
+
+This would be highly inefficient if the expression were, say, a database lookup.
+
+It could be disastrous if the expression included a side effect like `fire_the_missiles()`!
+
+<!-- livebook:{"break_markdown":true} -->
+
+The preferred way to bind variables is using `bind_quoted`.
+
+We can (and should) rewrite the module above as follows:
+
+```elixir
+x = 3
+y = 4
+
+defmodule MyMultiply2 do
+  defmacro mult(x, y) do
+    quote bind_quoted: [x: x, y: y] do
+      var!(x) = x * x
+      var!(y) = y * y
+      var!(x) + var!(y)
+    end
+  end
+end
+```
+
+```elixir
+require MyMultiply2
+
+MyMultiply2.mult(x, y)
+|> Code.eval_quoted()
+```
+
+Because we chose to assign `x * x` to `var!(x)`, rather than to `x` and `y * y` to `var!(y)`, rather than to `y`, we permanently modified these values outside the context of the macro. We could easily avoid `var!/1` to preserve macro hygeine.
 
 ```elixir
 %{x: x, y: y}
