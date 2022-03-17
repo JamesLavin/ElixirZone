@@ -1,6 +1,60 @@
 # Metaprogramming Elixir (ElixirZone - James Lavin)
 
-## Kernel.SpecialForms.quote(opts, block)
+## What is a macro (and why should I care)?
+
+
+
+## Code.string_to_quoted/2
+
+Code.string_to_quoted/2 converts a string into AST (the "abstract syntax tree" representation of that same Elixir code).
+
+The string representation "17" converts into the INTEGER 17, not the STRING "17":
+
+```elixir
+"17" |> Code.string_to_quoted()
+```
+
+```elixir
+"17" |> Code.string_to_quoted() |> elem(1)
+```
+
+To represent the STRING "17" within a string, we must either pass it into `Integer.to_string()` or wrap it within (escaped) quotation marks:
+
+```elixir
+"17 |> Integer.to_string()" |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+"\"17\"" |> Code.string_to_quoted() |> elem(1)
+```
+
+## Macro.to_string()
+
+We can REVERSE the operation `Code.string_to_quoted()` using `Macro.to_string()`:
+
+```elixir
+"17 |> Integer.to_string()" |> Code.string_to_quoted() |> elem(1) |> Macro.to_string()
+```
+
+```elixir
+"\"17\"" |> Code.string_to_quoted() |> elem(1) |> Macro.to_string()
+```
+
+## quote(opts, block)
+
+If you want to start with an AST representation, rather than a string representation, of your code, you can use `quote()`, (i.e., `Kernel.SpecialForms.quote(opts, block)`):
+
+```elixir
+quote do: 17
+```
+
+```elixir
+quote(do: 17) |> Macro.to_string()
+```
+
+```elixir
+quote(do: 17) |> Macro.to_string() |> Code.string_to_quoted!()
+```
 
 Metaprogramming is writing code that creates other code.
 
@@ -48,6 +102,13 @@ quote do: 7 + 8
 quote do: [1000, 1001, 1002]
 ```
 
+## unquote_splicing/1
+
+```elixir
+z = [4, 5, 6]
+quote do: [1, 2, 3, unquote_splicing(z), 7, 8]
+```
+
 ## (Aside) Weird display of charlists (character lists)
 
 ```elixir
@@ -73,6 +134,41 @@ quote do: [101, 102, 103]
 
 ```elixir
 [1000, 1001, 1002] |> IEx.Info.info()
+```
+
+## Macro.to_string()
+
+```elixir
+quote do: 17 + 18
+```
+
+```elixir
+quote(do: 17 + 18)
+|> Macro.to_string()
+```
+
+```elixir
+quote do
+  [1, 2, 3]
+  |> Enum.map(&(&1 + 1))
+end
+```
+
+```elixir
+quote do
+  [1, 2, 3]
+  |> Enum.map(&(&1 + 1))
+end
+|> Macro.to_string()
+```
+
+```elixir
+quote do: x * y * z
+```
+
+```elixir
+quote(do: x * y * z)
+|> Macro.to_string()
 ```
 
 ## AST literals
@@ -109,6 +205,43 @@ quote do: {1, 2, 3}
 ```
 
 ```elixir
+quote do: x
+```
+
+```elixir
+defmodule Pizza do
+end
+
+quote do: Pizza
+```
+
+```elixir
+defmodule Food.Pizza do
+end
+
+quote do: alias(Food.Pizza)
+```
+
+```elixir
+quote do: Delicious
+```
+
+```elixir
+defmodule Food.Cake do
+end
+
+quote do: alias(Food.Cake, as: Delicious)
+```
+
+```elixir
+quote do
+  def my_fun do
+    7
+  end
+end
+```
+
+```elixir
 quote do: true and false
 ```
 
@@ -137,6 +270,22 @@ quote do: SampleModule
 
 ```elixir
 quote do: :"Elixir.SampleModule"
+```
+
+```elixir
+quote(do: if(true, do: 1, else: 0))
+|> Macro.expand(__ENV__)
+```
+
+```elixir
+quote do
+  defmodule MyMod do
+    def my_fun do
+      7
+    end
+  end
+end
+|> Macro.expand(__ENV__)
 ```
 
 ## Code.eval_quoted(quoted, binding, opts)
