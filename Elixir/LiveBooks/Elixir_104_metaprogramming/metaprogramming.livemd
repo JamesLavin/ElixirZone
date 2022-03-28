@@ -1,6 +1,80 @@
 # Metaprogramming Elixir (ElixirZone - James Lavin)
 
-## What is a macro (and why should I care)?
+## Additional resources
+
+* https://www.theerlangelist.com/article/macros_1 (first of six blog posts by the great Saša Jurić)
+* https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
+* https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
+
+## What is a metaprogramming... and why should I care?
+
+## Dynamic function names
+
+```elixir
+defmodule TalkingHeads do
+  @funs [ask_yourself: "How did I get here?", no_party: "No disco!"]
+
+  for {k, v} <- @funs do
+    def unquote(k)(), do: unquote(v)
+  end
+end
+```
+
+```elixir
+TalkingHeads.ask_yourself()
+```
+
+```elixir
+TalkingHeads.no_party()
+```
+
+![mail](images/mail.png)
+
+## Kernel.SpecialForms
+
+In a previous episode, I wasn't clear on the difference between Kernel & Kernel.SpecialForms.
+
+I've since learned that macros in Kernel are expanded while macros in Kernel.SpecialForms are, well, special, and don't have documented implementations.
+
+Here's an example, the `for` comprehension. The documentation provides a LONG description and good examples:
+
+<!-- livebook:{"break_markdown":true} -->
+
+![for comprehension](images/for.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+The documentation is about 150 lines long, but here's the entire documented "implementation":
+
+![defmacro for](images/defmacro_for.png)
+
+It has a secret (?) implementation.
+
+## Kernel.then/2
+
+![then](images/then.png)
+
+```elixir
+defmodule OurThen do
+  defmacro our_then(value, fun) do
+    fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
+    value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
+
+    quote do
+      # becomes (at compilation  time): (fn x -> x * 2 end).(1)
+      unquote(fun).(unquote(value))
+    end
+  end
+end
+```
+
+```elixir
+require OurThen
+
+1 |> OurThen.our_then(fn x -> x * 2 end)
+# becomes (at compilation time):
+# (fn x -> x * 2 end).(1)
+```
 
 ## Kernel.tap/2
 
@@ -19,11 +93,33 @@ defmodule OurMod do
     value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
 
     quote bind_quoted: [fun: fun, value: value] do
+      # after bind_quoted:
+      #   * `fun` will represent the uninvoked function itself
+      #   * `value` will be the evaluated value
       _ = fun.(value)
       value
     end
   end
 end
+```
+
+```elixir
+%{a: 1} |> Map.update!(:a, &(&1 * 20))
+```
+
+```elixir
+&IO.inspect(&1.a)
+```
+
+```elixir
+&List.first/1
+```
+
+```elixir
+quote do
+  &List.first/1
+end
+|> Macro.to_string()
 ```
 
 ```elixir
@@ -33,29 +129,6 @@ require OurMod
 |> Map.update!(:a, &(&1 * 20))
 |> OurMod.our_tap(&IO.inspect(&1.a))
 |> Map.update!(:a, &(&1 + 100))
-```
-
-## Kernel.then/2
-
-![then](images/then.png)
-
-```elixir
-defmodule OurThen do
-  defmacro our_then(value, fun) do
-    fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
-    value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
-
-    quote do
-      unquote(fun).(unquote(value))
-    end
-  end
-end
-```
-
-```elixir
-require OurThen
-
-1 |> OurThen.our_then(fn x -> x * 2 end)
 ```
 
 ## Code.string_to_quoted/2
