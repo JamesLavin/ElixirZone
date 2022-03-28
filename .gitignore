@@ -10,3 +10,4 @@ erl_crash.dump
 .elixir_ls/
 **/backups
 **/funs_modules_pattern_matching.livemd
+**/.DS_Store
