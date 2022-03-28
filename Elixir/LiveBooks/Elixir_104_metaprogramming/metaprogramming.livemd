@@ -415,6 +415,24 @@ end
 |> Macro.expand(__ENV__)
 ```
 
+## Why aren't 2-element tuples modified?
+
+Keeping 2-element tuples unchanged in their AST representations makes keyword lists much easier to read:
+
+```elixir
+quote do: [{:red_sox, :good}, {:yankees, :evil}]
+```
+
+```elixir
+quote do: [red_sox: :good, yankees: :evil]
+```
+
+The above is much cleaner AST than this:
+
+```elixir
+quote do: [{:red_sox, :good, :fenway_park}, {:yankees, :evil, :yankees_stadium}]
+```
+
 ## Code.eval_quoted(quoted, binding, opts)
 
 ```elixir
