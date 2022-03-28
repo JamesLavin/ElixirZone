@@ -2,7 +2,61 @@
 
 ## What is a macro (and why should I care)?
 
+## Kernel.tap/2
 
+![code for tap](images/tap.png)
+
+```elixir
+%{a: 1}
+|> tap(&IO.inspect(&1.a))
+|> Map.update!(:a, &(&1 + 100))
+```
+
+```elixir
+defmodule OurMod do
+  defmacro our_tap(value, fun) do
+    fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
+    value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
+
+    quote bind_quoted: [fun: fun, value: value] do
+      _ = fun.(value)
+      value
+    end
+  end
+end
+```
+
+```elixir
+require OurMod
+
+%{a: 1}
+|> Map.update!(:a, &(&1 * 20))
+|> OurMod.our_tap(&IO.inspect(&1.a))
+|> Map.update!(:a, &(&1 + 100))
+```
+
+## Kernel.then/2
+
+![then](images/then.png)
+
+```elixir
+defmodule OurThen do
+  defmacro our_then(value, fun) do
+    fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
+    value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
+
+    quote do
+      unquote(fun).(unquote(value))
+    end
+  end
+end
+```
+
+```elixir
+require OurThen
+
+1 |> OurThen.our_then(fn x -> x * 2 end)
+```
 
 ## Code.string_to_quoted/2
 
@@ -582,4 +636,23 @@ first = quote do: %{a: 1, b: 2}
 second = quote do: %{c: 3, d: 4}
 
 MyMerge.merge(first, second)
+```
+
+## Module.create/3
+
+```elixir
+ast =
+  quote do
+    def answer_to_life, do: 42
+
+    def unladen_swallow_airspeed, do: "African or European?"
+  end
+
+Module.create(Culture, ast, Macro.Env.location(__ENV__))
+
+Culture.answer_to_life()
+```
+
+```elixir
+Culture.unladen_swallow_airspeed()
 ```
