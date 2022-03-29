@@ -30,25 +30,19 @@ TalkingHeads.no_party()
 
 ![mail](images/mail.png)
 
-## Kernel.SpecialForms
+## Understanding "magic"
 
-In a previous episode, I wasn't clear on the difference between Kernel & Kernel.SpecialForms.
+A blessing of powerful languages like Ruby and Elixir -- which provide users the ability to create domain-specific languages (DSLs) -- is that you can greatly simplify tasks via DSLs.
 
-I've since learned that macros in Kernel are expanded while macros in Kernel.SpecialForms are, well, special, and don't have documented implementations.
+But DSLs come with a curse... they add layers of indirection, which can make it harder to understand and debug code that uses those DSLs.
 
-Here's an example, the `for` comprehension. The documentation provides a LONG description and good examples:
+DSLs are "magic." Magical spells are powerful but also dangerous.
 
-<!-- livebook:{"break_markdown":true} -->
+Given that much of Elixir is created using the "magic" of macros and metaprogramming, you can't fully understand Elixir, leverage its full power, or help extend it without understanding macros and metaprogramming.
 
-![for comprehension](images/for.png)
+92% of Elixir was written in Elixir... via the magic of metaprogramming:
 
-<!-- livebook:{"break_markdown":true} -->
-
-The documentation is about 150 lines long, but here's the entire documented "implementation":
-
-![defmacro for](images/defmacro_for.png)
-
-It has a secret (?) implementation.
+![elixir is written in elixir](images/elixir_is_elixir.png)
 
 ## Kernel.then/2
 
@@ -130,6 +124,26 @@ require OurMod
 |> OurMod.our_tap(&IO.inspect(&1.a))
 |> Map.update!(:a, &(&1 + 100))
 ```
+
+## Kernel.SpecialForms
+
+In a previous episode, I wasn't clear on the difference between Kernel & Kernel.SpecialForms.
+
+I've since learned that macros in Kernel are expanded while macros in Kernel.SpecialForms are, well, special, and don't have documented implementations.
+
+Here's an example, the `for` comprehension. The documentation provides a LONG description and good examples:
+
+<!-- livebook:{"break_markdown":true} -->
+
+![for comprehension](images/for.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+The documentation is about 150 lines long, but here's the entire documented "implementation":
+
+![defmacro for](images/defmacro_for.png)
+
+It has a secret (?) implementation.
 
 ## Code.string_to_quoted/2
 
@@ -490,6 +504,11 @@ quote do
 end
 ```
 
+```elixir
+y = 7
+quote do: unquote(y)
+```
+
 To explicitly pull values from outside `quote` into it (at runtime), you can use `var!/1`.
 
 Here I'm also passing in an optional keyword list for use only when evaluating this particular quoted expression:
@@ -650,11 +669,43 @@ defmodule LogMath do
       left = unquote(left_arg)
       right = unquote(right_arg)
       Logger.debug("received '#{left} + #{right}'")
-      unquote(ctx) |> IO.inspect()
+      unquote(ctx) |> IO.inspect(label: "ctx")
       left + right
     end
   end
+
+  defmacro log({op, ctx, args}) do
+    quote bind_quoted: [op: op, ctx: ctx, args: args] do
+      IO.inspect(op, label: "op")
+      IO.inspect(ctx, label: "ctx")
+      IO.inspect(args, label: "args")
+    end
+  end
+
+  defmacro log2({op, ctx, [left_arg, right_arg]}) when op in [:+, :-, :*, :/] do
+    quote bind_quoted: [op: op, left: left_arg, right: right_arg, ctx: ctx] do
+      require Logger
+      # left = unquote(left_arg)
+      # right = unquote(right_arg)
+      Logger.debug("received '#{left} #{op} #{right}'")
+      ctx |> IO.inspect(label: "ctx")
+      # unquote(op)(left, right)
+      {op, ctx, [left, right]} |> Code.eval_quoted() |> elem(0)
+    end
+  end
+
+  defmacro log2({op, ctx, args}) do
+    quote bind_quoted: [op: op, ctx: ctx, args: args] do
+      IO.inspect(op, label: "op")
+      IO.inspect(ctx, label: "ctx")
+      IO.inspect(args, label: "args")
+    end
+  end
 end
+```
+
+```elixir
+Kernel.+(3, 4)
 ```
 
 When this code is compiled, `111 + 222` will be converted to AST -- `{:+, [context: Elixir, import: Kernel], [111, 222]}` -- and passed into `LogMath.log()`:
@@ -667,13 +718,38 @@ require LogMath
 ```
 
 ```elixir
+(333 + 444)
+|> LogMath.log()
+```
+
+```elixir
+# I added second defmacro clause to debug why this wasn't working:
 quote do
-  333 + 444
+  555 + 444
 end
 |> LogMath.log()
 ```
 
+```elixir
+quote do
+  Kernel.+(555, 444)
+end
+|> LogMath.log()
+
+# |> Macro.escape()
+```
+
 Why can't I pattern match against `[import: Kernel, context: Elixir]`???
+
+```elixir
+(666 - 555)
+|> LogMath.log2()
+```
+
+```elixir
+(666 / 3)
+|> LogMath.log2()
+```
 
 ## Unless & navigating Elixir documentation
 
