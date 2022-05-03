@@ -1,18 +1,103 @@
 # Metaprogramming Elixir (ElixirZone - James Lavin)
 
+## Words of encouragement/warning
+
+Metaprogramming is powerful but hard/confusing/frustrating to learn.
+
+You won't understand it all the first (or second or third) time through.
+
+Learning metaprogramming is like seeing "Magic Eye" (https://www.magiceye.com/) for the first time. Just keep staring at it and you'll eventually get it!
+
+Just keep watching videos and reading blog posts, Chris McCord's book, etc., and you'll slowly get there!
+
+I'm NOT an expert. I have done metaprogramming but only a tiny fraction as often as the true experts have.
+
 ## Additional resources
 
 * https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
 * https://elixir-lang.org/getting-started/meta/macros.html
 * https://repo.hex.pm/guides/elixir/meta-programming-in-elixir.epub
+* https://dockyard.com/blog/2016/08/16/the-minumum-knowledge-you-need-to-start-metaprogramming-in-elixir
 * https://www.theerlangelist.com/article/macros_1 (first of six blog posts by the great Saša Jurić)
 * https://www.crustofcode.com/tag/macros/
+* https://blog.appsignal.com/2021/09/07/an-introduction-to-metaprogramming-in-elixir.html
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
 
 ## What is a metaprogramming... and why should I care?
 
+### Benefits
+
+* Understand Elixir itself, most of which is created using Elixir macros (e.g., `def`, `defmodule`, `if`, `unless`, etc.)
+  * Even `defmacro` is defined using `defmacro`! (Don't ask me how!)
+* Extend the Elixir syntax with declarative functions that keep your code clean/sparse (e.g., `then` was only recently added, but you could have added it long ago).
+* Create functions dynamically, perhaps from data in a file, e.g., functions to capitalize Unicode.
+* Create your own DSLs (domain-specific languages), as many frameworks (e.g., Phoenix) do
+* Avoid code duplication by extracting code you wish to `use` in multiple modules into a code block dynamically injectable via the `defmacro __using__(opts)` macro
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Costs
+
+* Introduces an additional layer of indirection/abstraction
+* Harder to debug
+* Code written as macros is harder to understand
+
+<!-- livebook:{"break_markdown":true} -->
+
 ![compilation](images/compilation.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+* https://www.youtube.com/watch?v=Bo48sQDb-hk
+
+<!-- livebook:{"break_markdown":true} -->
+
+![compilation process](images/compilation_process.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![literals & tuples](images/literals_and_tuples.png)
+
+```elixir
+if 1 + 2 == 3, do: "this", else: "that"
+```
+
+```elixir
+if 1 + 2 == 3 do
+  "this"
+else
+  "that"
+end
+```
+
+```elixir
+if(Kernel.==(Kernel.+(1, 2), 3), [{:do, "this"}, {:else, "that"}])
+```
+
+```elixir
+quote do: if(1 + 2 == 3, do: "this", else: "that")
+```
+
+![plus](images/plus.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![inlining](images/inlining.png)
+
+```elixir
+&Kernel.+/2
+```
+
+```elixir
+quote do: 1 + 2
+```
+
+```elixir
+quote do: Kernel.+(1, 2)
+```
+
+
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -64,14 +149,16 @@ TalkingHeads.ask_yourself()
 TalkingHeads.no_party()
 ```
 
-## What is Elixir AST ("Abstract Syntax Tree")?
+## quote/2 transforms Elixir code --> an AST ("abstract syntax tree") data structure
 
 ```elixir
+# The input `1` is ordinary Elixir code. The output `1` is that value represented as AST
 quote do: 1
 ```
 
 ```elixir
 # Elixir -> AST
+# `sum(1,2)` has a different representation in AST than in Elixir code
 quote do: sum(1, 2)
 ```
 
@@ -86,6 +173,7 @@ quote do: sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
 ```
 
 ```elixir
+# The following cannot be evaluated because we have not provided a definition of `sum`
 quote do
   sum(1, 2)
 end
@@ -147,7 +235,17 @@ quote do: random_variable_name
 
 ```elixir
 # Elixir -> AST -> String
-Macro.to_string(quote do: sum(1, 2))
+quote do
+  sum(1, 2)
+end
+|> Macro.to_string()
+```
+
+```elixir
+# Using `quote do: ...`, you'll want to add parentheses or the compiler will likely
+# misinterpret your code
+quote(do: sum(1, 2))
+|> Macro.to_string()
 ```
 
 ```elixir
@@ -197,13 +295,92 @@ Given that much of Elixir is created using the "magic" of macros and metaprogram
 ![then](images/then.png)
 
 ```elixir
+%{}
+|> then(&Map.put(&1, :baseball, "Red Sox"))
+|> then(&Map.put(&1, :football, "Patriots"))
+|> then(&Map.put(&1, :basketball, "Celtics"))
+|> then(&Map.put(&1, :hockey, "Bruins"))
+|> then(&Map.put(&1, :real_football, "Revolution"))
+```
+
+## Macro.expand_once/2
+
+![unless macro](images/unless3.png)
+
+```elixir
+# This is compiled and then immediately evaluated
+unless true, do: :a, else: :b
+```
+
+```elixir
+# This is compiled and then immediately evaluated, but it throws an error
+# because the variable `unset_value` has no value
+unless unset_value, do: "yay", else: "boo"
+```
+
+```elixir
+# This is transformed into AST but NOT immediately evaluated:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+```
+
+```elixir
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.to_string()
+|> String.split("\n")
+|> Enum.each(&IO.puts(&1))
+```
+
+```elixir
+# This is transformed into AST but NOT immediately evaluated,
+# but one round of "macro expansion" is applied:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.expand_once(__ENV__)
+```
+
+```elixir
+# We can see this more clearly:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.expand_once(__ENV__)
+|> Macro.to_string()
+|> String.split("\n")
+|> Enum.each(&IO.puts(&1))
+```
+
+```elixir
+# This is transformed into AST but NOT immediately evaluated,
+# but two rounds of "macro expansion" are applied:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.expand_once(__ENV__)
+|> Macro.expand_once(__ENV__)
+|> Macro.to_string()
+|> String.split("\n")
+|> Enum.each(&IO.puts(&1))
+```
+
+## defmacro
+
+* `defmacro` takes its arguments in as AST, *not* as ordinary Elixir values
+* `unquote/1` (inside `quote do ... end`) transforms an AST argument into ordinary Elixir code by evaluating its current Elixir value, allowing you to pull in a value during code compilation (i.e., "at compile time") from the environment outside the `quote do ... end` block.
+* Everything inside the `quote do ... end` gets transformed from ordinary Elixir code into AST
+
+```elixir
 defmodule OurThen do
   defmacro our_then(value, fun) do
     fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
     value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
 
     quote do
-      # becomes (at compilation  time): (fn x -> x * 2 end).(1)
+      # becomes (at compilation time below): (fn x -> x * 2 end).(1)
       unquote(fun).(unquote(value))
     end
   end
@@ -322,11 +499,17 @@ To represent the STRING "17" within a string, we must either pass it into `Integ
 We can REVERSE the operation `Code.string_to_quoted()` using `Macro.to_string()`:
 
 ```elixir
-"17 |> Integer.to_string()" |> Code.string_to_quoted() |> elem(1) |> Macro.to_string()
+"17 |> Integer.to_string()"
+|> Code.string_to_quoted()
+|> elem(1)
+|> Macro.to_string()
 ```
 
 ```elixir
-"\"17\"" |> Code.string_to_quoted() |> elem(1) |> Macro.to_string()
+"\"17\""
+|> Code.string_to_quoted()
+|> elem(1)
+|> Macro.to_string()
 ```
 
 ## quote(opts, block)
@@ -446,6 +629,17 @@ end
 ```elixir
 quote do
   [1, 2, 3]
+  |> Enum.map(&(&1 + 1))
+end
+|> Macro.to_string()
+```
+
+```elixir
+# The above represented a calculation without triggering the actual calculation.
+# This is "lazy evaluation."
+# The code for the calculation need not even be calculatable at compile time:
+quote do
+  [user_input_a, user_input_b, user_input_c]
   |> Enum.map(&(&1 + 1))
 end
 |> Macro.to_string()
@@ -971,3 +1165,33 @@ Culture.answer_to_life()
 ```elixir
 Culture.unladen_swallow_airspeed()
 ```
+
+## use & __using__(opts)
+
+![use](images/use.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![use2](images/use2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![use3](images/use3.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![use4](images/use4.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![defoverridable](images/defoverridable.png)
+
+## register_attribute(..., accumulate: true) & @before_compile
+
+Source: Jia Hao Woo, https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
+
+Chris McCord's metaprogramming book has a very similar example
+
+<!-- livebook:{"break_markdown":true} -->
+
+![accumulate](images/accumulate.png)
