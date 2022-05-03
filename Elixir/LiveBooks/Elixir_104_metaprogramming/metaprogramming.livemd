@@ -2,17 +2,53 @@
 
 ## Additional resources
 
+* https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
+* https://elixir-lang.org/getting-started/meta/macros.html
+* https://repo.hex.pm/guides/elixir/meta-programming-in-elixir.epub
 * https://www.theerlangelist.com/article/macros_1 (first of six blog posts by the great Saša Jurić)
+* https://www.crustofcode.com/tag/macros/
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
 
 ## What is a metaprogramming... and why should I care?
+
+![compilation](images/compilation.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+* https://www.youtube.com/watch?v=xj6yNzcGlEE
+* https://www.youtube.com/watch?v=EFAgc7YqDP8
+
+<!-- livebook:{"break_markdown":true} -->
+
+![def vs defmacro](images/def_defmacro.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+* https://www.youtube.com/watch?v=oikF1Ze2Vao
+
+<!-- livebook:{"break_markdown":true} -->
+
+![quote as AST](images/quote_as_ast.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+https://www.youtube.com/watch?v=55-X7rSw8M0
+
+<!-- livebook:{"break_markdown":true} -->
+
+![code vs AST](images/code_vs_AST.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![contexts](images/contexts.png)
 
 ## Dynamic function names
 
 ```elixir
 defmodule TalkingHeads do
   @funs [ask_yourself: "How did I get here?", no_party: "No disco!"]
+  # @funs [{:ask_yourself, "How did I get here?"}, {:no_party, "No disco!"}]
 
   for {k, v} <- @funs do
     def unquote(k)(), do: unquote(v)
@@ -28,9 +64,105 @@ TalkingHeads.ask_yourself()
 TalkingHeads.no_party()
 ```
 
+## What is Elixir AST ("Abstract Syntax Tree")?
+
+```elixir
+quote do: 1
+```
+
+```elixir
+# Elixir -> AST
+quote do: sum(1, 2)
+```
+
+```elixir
+# The AST this generates spells out -- in a nested data structure -- 
+#       the exact operations to be run.
+# This is a nested data structure representing operations to be run.
+# This runnable specification does NOT execute those operations.
+# In fact, this is not runnable as is because `sum` is not even defined.
+# Executing the AST this generates will require a definition for `sum/2`:
+quote do: sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
+```
+
+```elixir
+quote do
+  sum(1, 2)
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+defmodule MyMath do
+  def sum(a, b), do: a + b
+end
+
+quote do
+  MyMath.sum(1, 2)
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  MyMath.sum(MyMath.sum(MyMath.sum(1, 3), MyMath.sum(2, 4)), MyMath.sum(5, 6))
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  import MyMath
+  sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
+end
+```
+
+```elixir
+quote do
+  import MyMath
+  sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  1 + 2
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do: sum(1, 2) |> Code.eval_quoted()
+```
+
+```elixir
+quote do: random_variable_name
+```
+
+```elixir
+# AST cannot be further converted
+{:sum, [], [1, 2]}
+```
+
+```elixir
+# Elixir -> AST -> String
+Macro.to_string(quote do: sum(1, 2))
+```
+
+```elixir
+# AST -> String
+{:sum, [], [1, 2]} |> Macro.to_string()
+```
+
+```elixir
+# AST -> String -> AST
+{:sum, [], [1, 2]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
 ![mail](images/mail.png)
 
-## Understanding "magic"
+## Understanding DSL "magic" (including Elixir itself)
 
 A blessing of powerful languages like Ruby and Elixir -- which provide users the ability to create domain-specific languages (DSLs) -- is that you can greatly simplify tasks via DSLs.
 
@@ -43,6 +175,22 @@ Given that much of Elixir is created using the "magic" of macros and metaprogram
 92% of Elixir was written in Elixir... via the magic of metaprogramming:
 
 ![elixir is written in elixir](images/elixir_is_elixir.png)
+
+## Kernel.SpecialForms
+
+![SpecialForms](images/special_forms.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![case](images/case.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![case definition](images/case_definition.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+^^^ We have touched the metal / hit the event horizon, beyond which we cannot proceed.
 
 ## Kernel.then/2
 
