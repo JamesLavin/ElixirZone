@@ -62,6 +62,10 @@ Maybe one of these true experts will record an expert-level metaprogramming vide
 
 <!-- livebook:{"break_markdown":true} -->
 
+https://www.youtube.com/watch?v=ChGSLUVe5Gs
+
+<!-- livebook:{"break_markdown":true} -->
+
 ![macro components](images/macro_components.png)
 
 <!-- livebook:{"break_markdown":true} -->
@@ -76,6 +80,56 @@ Benefits of LiveView Surface's Macro Components:
 <!-- livebook:{"break_markdown":true} -->
 
 ![for vs. for](images/for_vs_for.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+https://www.youtube.com/watch?v=CHHQ_xzv4pw
+
+<!-- livebook:{"break_markdown":true} -->
+
+![gentle intro](images/gentle_intro_to_macros.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![simple timer](images/simple_timer.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+https://www.youtube.com/watch?v=F7qaIqcaTDc
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Billy defmacro](images/billy_defmacro2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![def is a macro](images/def_is_a_macro.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![defmacro def](images/defmacro_def.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+https://www.youtube.com/watch?v=-mgwW3RVI50
+
+<!-- livebook:{"break_markdown":true} -->
+
+![code gen mix](images/code_gen_mix.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![macros code tradeoffs](images/macros_code_tradeoffs.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![defmodule unquote](images/defmodule_unquote.png)
+
+```elixir
+# Code.compile_quoted(quoted_code)
+
+# File.write(...)
+```
 
 ## Code compilation process
 
@@ -131,6 +185,12 @@ quote do: 1 + 2
 quote do
   Kernel.+(1, 2)
 end
+```
+
+## Environments (__ENV__ & __CALLER__)
+
+```elixir
+IO.inspect(__ENV__, limit: :infinity, printable_limit: :infinity, structs: false)
 ```
 
 ## Why not just use functions?
@@ -197,6 +257,36 @@ https://www.youtube.com/watch?v=55-X7rSw8M0
 <!-- livebook:{"break_markdown":true} -->
 
 ![contexts](images/contexts.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+* [Presentation video & slides](https://codesync.global/media/macros-in-elixir-responsible-code-generation-cbf20/)
+* [Slides (PDF)](https://codesync.global/uploads/media/activity_slides/0001/02/bf3cdf4f4c4c434fc7e97b103ccd9bceae93d76e.pdf)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![macro contexts](images/macro_contexts.png)
+
+```elixir
+defmodule MyMod do
+  defmacro who_am_i() do
+    IO.inspect(__MODULE__, label: "Macro Context")
+    IO.inspect(__CALLER__.module, label: "Caller Env")
+
+    quote do
+      IO.inspect(__MODULE__, label: "Caller Context")
+      IO.inspect(unquote(__MODULE__), label: "Value from Macro Context")
+    end
+  end
+end
+```
+
+```elixir
+defmodule MyCaller do
+  require MyMod
+  MyMod.who_am_i()
+end
+```
 
 ## Dynamic function names
 
@@ -338,6 +428,39 @@ quote(do: sum(1, 2))
 ```elixir
 # AST -> String -> AST
 {:sum, [], [1, 2]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+{:%{}, [], [{:a, 1}, {:b, 2}]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+{:{}, [], [1, 2, 3, 4]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+{:{}, [], [1, 2]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+[1, 2, 3, 4, 5] |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+[{:a, 1}, {:b, 2}, {:c, 3}, {:d, 4}, {:e, 5}]
+|> Macro.to_string()
+|> Code.string_to_quoted()
+|> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+[a: 1, b: 2, c: 3, d: 4, e: 5] |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
 ```
 
 ![mail](images/mail.png)
