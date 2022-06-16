@@ -1,16 +1,20 @@
 # Metaprogramming Elixir (ElixirZone - James Lavin)
 
-## Words of encouragement/warning
+## Words of encouragement
 
-Metaprogramming is powerful but hard/confusing/frustrating to learn.
+* Metaprogramming is powerful but hard/confusing/frustrating to learn.
 
-You won't understand it all the first (or second or third) time through.
+* You won't understand it all the first (or second or third) time through.
 
-Learning metaprogramming is like seeing "Magic Eye" (https://www.magiceye.com/) the first time. Just keep staring and you'll eventually get it!
+* Learning metaprogramming is like seeing "Magic Eye" (https://www.magiceye.com/) the first time. Just keep staring and you'll eventually get it!
 
-Just keep watching videos and reading blog posts, Chris McCord's book, etc., and you'll slowly get there!
+* Just keep watching videos and reading blog posts, Chris McCord's book, etc., and you'll slowly get there!
 
-I'm NOT an expert. I've done metaprogramming but only a tiny fraction as often as the true experts have.
+## Words of warning
+
+* I'm NOT an expert. I've done metaprogramming but only a tiny fraction as often as the true experts have.
+
+* EXPERTS are folks like these, who have done 10,000x as much metaprogramming as I have:
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -60,7 +64,7 @@ Maybe one of these true experts will record an expert-level metaprogramming vide
 * Code written as macros is harder to understand
 * Metaprogramming requires thinking about both compilation-time code execution and runtime-code execution
 
-<!-- livebook:{"break_markdown":true} -->
+## Marlus Saraiva: https://www.youtube.com/watch?v=ChGSLUVe5Gs
 
 https://www.youtube.com/watch?v=ChGSLUVe5Gs
 
@@ -81,9 +85,10 @@ Benefits of LiveView Surface's Macro Components:
 
 ![for vs. for](images/for_vs_for.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Qing Wu (?): https://www.youtube.com/watch?v=CHHQ_xzv4pw
 
-https://www.youtube.com/watch?v=CHHQ_xzv4pw
+https://www.youtube.com/watch?v=CHHQ_xzv4pw (doesn't indicate the speaker's name)
+https://www.youtube.com/watch?v=X8QfT7BNE44 is from Qing Wu, who I believe is the same presenter)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -93,7 +98,7 @@ https://www.youtube.com/watch?v=CHHQ_xzv4pw
 
 ![simple timer](images/simple_timer.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Billy Ceskavich: https://www.youtube.com/watch?v=F7qaIqcaTDc
 
 https://www.youtube.com/watch?v=F7qaIqcaTDc
 
@@ -109,7 +114,7 @@ https://www.youtube.com/watch?v=F7qaIqcaTDc
 
 ![defmacro def](images/defmacro_def.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Bryan Weber: https://www.youtube.com/watch?v=-mgwW3RVI50
 
 https://www.youtube.com/watch?v=-mgwW3RVI50
 
@@ -135,7 +140,7 @@ https://www.youtube.com/watch?v=-mgwW3RVI50
 
 ![compilation](images/compilation.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Jesse Anderson: https://www.youtube.com/watch?v=Bo48sQDb-hk
 
 * https://www.youtube.com/watch?v=Bo48sQDb-hk
 
@@ -229,7 +234,7 @@ Function args are always evaluated when the function gets called!
 
 To avoid that, we use macros, which receive AST, which represents unevaluatable data structures that have not (yet) been evaluated.
 
-<!-- livebook:{"break_markdown":true} -->
+## Nicholas J. Henry: https://www.youtube.com/watch?v=xj6yNzcGlEE
 
 * https://www.youtube.com/watch?v=xj6yNzcGlEE
 * https://www.youtube.com/watch?v=EFAgc7YqDP8
@@ -238,7 +243,7 @@ To avoid that, we use macros, which receive AST, which represents unevaluatable 
 
 ![def vs defmacro](images/def_defmacro.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Adi Iyengar: https://www.youtube.com/watch?v=oikF1Ze2Vao
 
 * https://www.youtube.com/watch?v=oikF1Ze2Vao
 
@@ -246,7 +251,7 @@ To avoid that, we use macros, which receive AST, which represents unevaluatable 
 
 ![quote as AST](images/quote_as_ast.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Lizzie Paquette: https://www.youtube.com/watch?v=55-X7rSw8M0
 
 https://www.youtube.com/watch?v=55-X7rSw8M0
 
@@ -461,6 +466,30 @@ quote(do: sum(1, 2))
 ```elixir
 # AST -> String -> AST
 [a: 1, b: 2, c: 3, d: 4, e: 5] |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+![Brex.Struct](images/brex.struct.png)
+
+```elixir
+fields = [
+  %{name: "id", type: "integer"},
+  %{name: "name", type: "String.t()"},
+  %{name: "status", type: "atom()"}
+]
+
+{:%{}, [], fields |> Enum.map(fn x -> {x.name, x.type} end)}
+```
+
+```elixir
+fields = [
+  %{name: "id", type: "integer"},
+  %{name: "name", type: "String.t()"},
+  %{name: "status", type: "atom()"}
+]
+
+{:%, [],
+ [{:__MODULE__, [], Elixir}, {:%{}, [], fields |> Enum.map(fn x -> {x.name, x.type} end)}]}
+|> Macro.to_string()
 ```
 
 ![mail](images/mail.png)
