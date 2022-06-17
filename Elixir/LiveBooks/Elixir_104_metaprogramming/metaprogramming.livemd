@@ -12,7 +12,21 @@
 
 ## Words of warning
 
+https://en.wikipedia.org/wiki/Woozle_effect
+
+<!-- livebook:{"break_markdown":true} -->
+
+![woozle](images/woozle.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
 * I'm NOT an expert. I've done metaprogramming but only a tiny fraction as often as the true experts have.
+
+* This talk will RAMBLE ON AND ON because:
+
+  * Metaprogramming is hard to grasp, so covering the same ground multiple times from multiple perspectives should help you grasp the concepts more fully
+
+  * I'm too lazy to organize this rambling material better
 
 * EXPERTS are folks like these, who have done 10,000x as much metaprogramming as I have:
 
@@ -30,7 +44,13 @@
 
 <!-- livebook:{"break_markdown":true} -->
 
+![Wojtek giving my son everything he could handle](images/Wojtek_Daryl_pingpong_battle.jpg)
+
+<!-- livebook:{"break_markdown":true} -->
+
 Maybe one of these true experts will record an expert-level metaprogramming video???
+
+Would be great, but they've already given us SO much. Just an idea... NOT a request!
 
 ## Additional resources
 
@@ -52,7 +72,7 @@ Maybe one of these true experts will record an expert-level metaprogramming vide
   * Even `defmacro` is defined using `defmacro`! (Don't ask me how!)
 * Extend the Elixir syntax with declarative functions that keep your code clean/sparse (e.g., `then` was only recently added, but you could have added it long ago).
 * Create functions dynamically, perhaps from data in a file, e.g., functions to capitalize Unicode.
-* Create your own DSLs (domain-specific languages), as many frameworks (e.g., Phoenix) do
+* Create your own DSLs (domain-specific languages), as many frameworks (e.g., Phoenix, Ecto, Surface) do
 * Avoid code duplication by extracting code you wish to `use` in multiple modules into a code block dynamically injectable via the `defmacro __using__(opts)` macro
 
 <!-- livebook:{"break_markdown":true} -->
