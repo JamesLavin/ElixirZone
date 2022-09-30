@@ -68,21 +68,29 @@ Would be great, but they've already given us SO much. Just an idea... NOT a requ
 
 ### Benefits
 
-* Understand Elixir itself, most of which is created using Elixir macros (e.g., `def`, `defmodule`, `if`, `unless`, etc.)
+* **Understand Elixir** itself, most of which is created using Elixir macros
+  * Examples: `def`, `defmodule`, `if`, `unless`, etc.
   * Even `defmacro` is defined using `defmacro`! (Don't ask me how!)
-* Extend the Elixir syntax with declarative functions that keep your code clean/sparse (e.g., `then` was only recently added, but you could have added it long ago).
-* Create functions dynamically, perhaps from data in a file, e.g., functions to capitalize Unicode.
-* Create your own DSLs (domain-specific languages), as many frameworks (e.g., Phoenix, Ecto, Surface) do
-* Avoid code duplication by extracting code you wish to `use` in multiple modules into a code block dynamically injectable via the `defmacro __using__(opts)` macro
+* **Extend the Elixir syntax** with declarative functions that keep your code clean/sparse
+  * Example: `then` was only recently added, but you could have added it long ago
+* **Create functions dynamically**, perhaps from data in a file
+  * Example: functions to capitalize Unicode.
+* **Create your own DSLs** (domain-specific languages):
+  * Phoenix
+  * Ecto
+  * HEEX templates, Surface
+  * https://rdf-elixir.dev/
+  * https://github.com/Revmaker/gremlex
+* **Create reusable compile-time code** by extracting code you wish to `use` in multiple modules into a code block dynamically injectable via the `defmacro __using__(opts)` macro
 
 <!-- livebook:{"break_markdown":true} -->
 
-### Costs
+### Metaprogramming Costs
 
-* Introduces an additional layer of indirection/abstraction
-* Harder to debug
-* Code written as macros is harder to understand
-* Metaprogramming requires thinking about both compilation-time code execution and runtime-code execution
+* Introduces an additional layer of **indirection/abstraction**
+* **Harder to debug** code
+* **Harder to understand** code
+* **Requires thinking about both compilation-time code execution and runtime-code execution**
 
 ## Marlus Saraiva: https://www.youtube.com/watch?v=ChGSLUVe5Gs
 
@@ -173,10 +181,88 @@ https://www.youtube.com/watch?v=-mgwW3RVI50
 ![literals & tuples](images/literals_and_tuples.png)
 
 ```elixir
+# runtime evaluation
+
+r = 2
+:math.pi() * :math.pow(r, 2)
+```
+
+```elixir
+# ordinary function
+
+defmodule Area do
+  def circle(radius) do
+    :math.pi() * :math.pow(radius, 2)
+  end
+end
+
+# runtime evaluation
+
+Area.circle(2)
+```
+
+```elixir
+# Macro function
+
+defmodule AreaMacro do
+  defmacro circle(radius) do
+    quote do
+      :math.pi() * :math.pow(unquote(radius), 2)
+    end
+  end
+end
+
+# runtime evaluation
+
+require AreaMacro
+AreaMacro.circle(2)
+```
+
+```elixir
+# Macro function
+
+defmodule AreaMacro2 do
+  defmacro __using__(opts) do
+    case opts do
+      :circle ->
+        quote location: :keep, bind_quoted: [opts: opts] do
+          def area(radius) do
+            :math.pi() * :math.pow(radius, 2)
+          end
+        end
+
+      :square ->
+        quote location: :keep, bind_quoted: [opts: opts] do
+          def area(side) do
+            :math.pow(side, 2)
+          end
+        end
+    end
+  end
+end
+
+defmodule Circle do
+  use AreaMacro2, :circle
+end
+
+defmodule Square do
+  use AreaMacro2, :square
+end
+
+# runtime evaluation
+
+{Circle.area(2), Square.area(2)}
+```
+
+```elixir
+# runtime evaluation
+
 if 1 + 2 == 3, do: "this", else: "that"
 ```
 
 ```elixir
+# runtime evaluation
+
 if 1 + 2 == 3 do
   "this"
 else
@@ -185,11 +271,74 @@ end
 ```
 
 ```elixir
+# runtime evaluation
+
 if(Kernel.==(Kernel.+(1, 2), 3), [{:do, "this"}, {:else, "that"}])
 ```
 
 ```elixir
-quote do: if(1 + 2 == 3, do: "this", else: "that")
+# compile without evaluation
+
+quote do
+  if(1 + 2 == 3, do: "this", else: "that")
+end
+```
+
+```elixir
+# compile, then evaluate
+
+quote do
+  if(1 + 2 == 3, do: "this", else: "that")
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+one = 1
+two = 2
+three = 3
+if(one + two == three, do: "this", else: "that")
+```
+
+```elixir
+quote do
+  if(one + two == three, do: "this", else: "that")
+end
+```
+
+```elixir
+quote do
+  if(var!(one) + var!(two) == var!(three), do: "this", else: "that")
+end
+|> Code.eval_quoted(one: 1, two: 2, three: 3)
+```
+
+```elixir
+quote do
+  if(var!(one) + var!(two) == var!(three), do: "this", else: "that")
+end
+|> Code.eval_quoted(one: 1, two: 2, three: 4)
+```
+
+```elixir
+quote do
+  if(one + two == three, do: "this", else: "that")
+end
+```
+
+![Star Wars MadLibs](images/star_wars_madlibs.jpeg)
+
+```elixir
+# Fails with ** (CompileError) nofile:1: undefined variable "three"
+
+# quote do if(var!(one) + var!(two) == var!(three), do: "this", else: "that") end
+# |> Code.eval_quoted([one: 1, two: 2])
+```
+
+```elixir
+madlib =
+  quote do
+  end
 ```
 
 ![plus](images/plus.png)
