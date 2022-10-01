@@ -20,8 +20,9 @@ If you're interested, here are some great resources I have enjoyed:
 
 RESEARCHERS:
 
-* Michael Levin (I've read a ton of his research and watched a bunch of his Youtube videos... mind-blowing stuff)
-* Nick Lane (I've bought all his books and watched a number of his lectures. Also mind-blowing)
+* Michael Levin (I've read a ton of his research and watched a bunch of his Youtube videos... mind-blowing stuff manipulating biology to understand how it works, how to program it, and how collective behavior and intelligence arises), e.g., [Intelligence Beyond the Brain: Morphogenesis as an Example of the Scaling of Basal Cognition](https://www.youtube.com/watch?v=RwEKg5cjkKQ)
+* Nick Lane (mitochondria and the evolution of life... I've bought all his books and watched a number of his lectures. Also mind-blowing), e.g., [How Does Chemistry Come Alive?](https://www.youtube.com/watch?v=QmvS7tgvy6U)
+* Robert Signer (aging) & Shiri Gur-Cohen (stem cells), e.g. [A Closer Look at….Aging](https://www.youtube.com/watch?v=dVCuUNsGifQ)
 
 BOOKS:
 
@@ -125,6 +126,101 @@ I've been making excuses for NOT recording this, but my excuses are all bullshit
 * Elixir books' chapters on metaprogramming
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
+
+## What is a metaprogramming... and why should I care?
+
+## Examples from Elixir's Kernel module (slightly simplifed)
+
+```
+defmacro !value do
+
+  quote do
+
+    case unquote(value) do
+      x when :"Elixir.Kernel".in(x, [false, nil]) -> true
+      _ -> false
+    end
+    
+  end
+
+end
+```
+
+```elixir
+defmodule Human do
+  @enforce_keys [:name, :age]
+  defstruct name: nil, age: 0
+  @type t :: %__MODULE__{name: String.t(), age: non_neg_integer}
+end
+```
+
+```elixir
+mary = %Human{name: "Mary", age: 28}
+mary
+```
+
+```elixir
+IO.inspect(mary, structs: false)
+```
+
+```elixir
+quote do
+  %{__struct__: Human, age: 28, name: "Mary"}
+end
+```
+
+```
+defmacro is_struct(term) do
+  quote do
+    is_map(unquote(term)) and
+      :erlang.is_map_key(:__struct__, unquote(term)) and
+      is_atom(:erlang.map_get(:__struct__, unquote(term)))
+  end
+end
+```
+
+```elixir
+# ELIXIR CODE
+
+# %{__struct__: Human, age: 28, name: "Mary"}
+term = %Human{age: 28, name: "Mary"}
+
+is_map(term) and
+  :erlang.is_map_key(:__struct__, term) and
+  is_atom(:erlang.map_get(:__struct__, term))
+```
+
+```elixir
+# AST (ABSTRACT SYNTAX TREE)
+
+term_as_ast =
+  {:%{}, [], [__struct__: {:__aliases__, [alias: false], [:Human]}, age: 28, name: "Mary"]}
+
+quoted =
+  quote do
+    is_map(unquote(term_as_ast)) and
+      :erlang.is_map_key(:__struct__, unquote(term_as_ast)) and
+      is_atom(:erlang.map_get(:__struct__, unquote(term_as_ast)))
+  end
+
+quoted |> Code.eval_quoted()
+```
+
+```elixir
+%{a: 1}
+|> Map.update!(:a, &(&1 + 2))
+|> tap(&IO.inspect(&1.a))
+|> Map.update!(:a, &(&1 * 2))
+```
+
+```
+  defmacro tap(value, fun) do
+    quote bind_quoted: [fun: fun, value: value] do
+      _ = fun.(value)
+      value
+    end
+  end
+```
 
 ## What is a metaprogramming... and why should I care?
 
