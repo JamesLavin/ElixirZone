@@ -1,6 +1,55 @@
 # Metaprogramming Elixir (ElixirZone - James Lavin)
 
-## Words of encouragement
+## No videos for seven months?!?! Are you dead?
+
+Fortunately, I'm NOT dead.
+
+My job keeps me very busy
+
+Nights and weekends, I've been building a product I've wanted to build for a decade.
+
+I love preparing and sharing ElixirZone videos with you (though the recording & editing is less fun) and really appreciate your appreciative, positive feedback, but my side project is even more exciting, so I have slowed down on ElixirZone.
+
+## You promised us software scalability insights from biology!
+
+This will also be slower than planned due to pouring most of my free time into my side project.
+
+I have continued to learn from and be amazed by biology.
+
+If you're interested, here are some great resources I have enjoyed:
+
+RESEARCHERS:
+
+* Michael Levin (I've read a ton of his research and watched a bunch of his Youtube videos... mind-blowing stuff)
+* Nick Lane (I've bought all his books and watched a number of his lectures. Also mind-blowing)
+
+BOOKS:
+
+* Donna Jackson Nakazawa, *The Angel and the Assassin*
+* Peter M. Hoffman, *Life's Ratchet* (recommended by an ElixirZone subscriber. Thanks!)
+* Paul G. Falkowski, *Life's Engines*
+* Beronda L. Montgomery, *Lessons from Plants*
+* Carl Zimmer, *Life's Edge*
+* Lee Know, *Mitochondria and the Future of Medicine*
+* Steven Strogatz, *Sync*
+* Nick Lane, *Power, Sex, Suicide* (this prof is amazing... has authored a handful of great books)
+* Mark Humphries, *The Spike*
+* Athena Aktipis, *The Cheating Cell*
+* Benjamin Bikman, *Why We Get Sick*
+* Merlin Sheldrake, *Entangled Life*
+* Antonio Damasio, *The Strange Order of Things*
+* Jeremy DeSilva, *First Steps*
+* Walter Isaacson, *The Code Breaker*
+* Alex Bezzerides, *Evolution Gone Wrong*
+* Giulia Enders, *Gut*
+* Michael Pollan, *Cooked*
+* Frans de Waal, *Are We Smart Enough to Know How Smart Animals Are?* (another amazing prof with multiple fabulous books)
+* Oliver Sacks, *The Mind's Eye* (another prolific researcher/author)
+* Alex Korb, *The Upward Spiral*
+* Matthew Walker, *Why We Sleep*
+* Vivek H. Murthy, *Together*
+
+## Elixir metaprogramming... Words of encouragement
 
 * Metaprogramming is powerful but hard/confusing/frustrating to learn.
 
@@ -10,7 +59,7 @@
 
 * Just keep watching videos and reading blog posts, Chris McCord's book, etc., and you'll slowly get there!
 
-## Words of warning
+## Elixir metaprogramming... Words of warning
 
 https://en.wikipedia.org/wiki/Woozle_effect
 
@@ -52,6 +101,17 @@ Maybe one of these true experts will record an expert-level metaprogramming vide
 
 Would be great, but they've already given us SO much. Just an idea... NOT a request!
 
+## If I'm no expert, why am I presenting this?
+
+I've been making excuses for NOT recording this, but my excuses are all bullshit...
+
+| My Excuse                                                         | Why it's bullshit                                                                                                            | Implication for you                                                                                                                                                                                     |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I don't know everything and will waste people's time              | Having just SOME knowledge can be an ADVANTAGE in teaching... Curse of Knowledge                                             | Each of YOU knows things well enough to teach those who know less                                                                                                                                       |
+| I don't know everything and don't want to embarrass myself        | "Imposter Syndrome" is very real. I know enough to help metaprogramming newbies                                              | Everyone feels "imposter syndrome," so don't let that prevent you from sharing what you DO know                                                                                                         |
+| The world is crumbling all around us                              | True, but Russia's invasion, rising fascism, and global warming are beyond my control, aside from small things I can/must do | Each of us should try to make the world better and happier however we can, especially when things are bleak. Don't cower at the size of the challenge. Do what you can and others will do what they can |
+| I've been working on something super cool and de-prioritized this | Okay, but it has been 7 months                                                                                               | Prioritize & balance your life. Avoid going 100% on any one area                                                                                                                                        |
+
 ## Additional resources
 
 * https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
@@ -61,6 +121,8 @@ Would be great, but they've already given us SO much. Just an idea... NOT a requ
 * https://www.theerlangelist.com/article/macros_1 (first of six blog posts by the great Saša Jurić)
 * https://www.crustofcode.com/tag/macros/
 * https://blog.appsignal.com/2021/09/07/an-introduction-to-metaprogramming-in-elixir.html
+* Chris McCord's *Metaprogramming Elixir* book
+* Elixir books' chapters on metaprogramming
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
 
@@ -188,7 +250,7 @@ r = 2
 ```
 
 ```elixir
-# ordinary function
+# ordinary function created at compile time
 
 defmodule Area do
   def circle(radius) do
@@ -205,7 +267,11 @@ Area.circle(2)
 # Macro function
 
 defmodule AreaMacro do
+  require Logger
+
   defmacro circle(radius) do
+    Logger.info("compiling...")
+
     quote do
       :math.pi() * :math.pow(unquote(radius), 2)
     end
@@ -215,6 +281,8 @@ end
 # runtime evaluation
 
 require AreaMacro
+# x = 3
+# {AreaMacro.circle(2), AreaMacro.circle(x)}
 AreaMacro.circle(2)
 ```
 
@@ -252,6 +320,10 @@ end
 # runtime evaluation
 
 {Circle.area(2), Square.area(2)}
+```
+
+```elixir
+Circle
 ```
 
 ```elixir
