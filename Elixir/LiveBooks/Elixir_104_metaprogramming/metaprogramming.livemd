@@ -23,6 +23,8 @@ RESEARCHERS:
 * Michael Levin (I've read a ton of his research and watched a bunch of his Youtube videos... mind-blowing stuff manipulating biology to understand how it works, how to program it, and how collective behavior and intelligence arises), e.g., [Intelligence Beyond the Brain: Morphogenesis as an Example of the Scaling of Basal Cognition](https://www.youtube.com/watch?v=RwEKg5cjkKQ)
 * Nick Lane (mitochondria and the evolution of life... I've bought all his books and watched a number of his lectures. Also mind-blowing), e.g., [How Does Chemistry Come Alive?](https://www.youtube.com/watch?v=QmvS7tgvy6U)
 * Robert Signer (aging) & Shiri Gur-Cohen (stem cells), e.g. [A Closer Look at….Aging](https://www.youtube.com/watch?v=dVCuUNsGifQ)
+* Steve Strogatz (synchronization), e.g., [The Story of Sync](https://www.youtube.com/watch?v=RpU7JrE1uCk)
+* Veronica O'Keane, [How We Make Memories and How Memories Make Us](https://www.youtube.com/watch?v=TZMYvnL8dfI)
 
 BOOKS:
 
@@ -41,6 +43,7 @@ BOOKS:
 * Antonio Damasio, *The Strange Order of Things*
 * Jeremy DeSilva, *First Steps*
 * Walter Isaacson, *The Code Breaker*
+* Dean Buonomano, *Your Brain Is a Time Machine*
 * Alex Bezzerides, *Evolution Gone Wrong*
 * Giulia Enders, *Gut*
 * Michael Pollan, *Cooked*
@@ -67,6 +70,14 @@ https://en.wikipedia.org/wiki/Woozle_effect
 <!-- livebook:{"break_markdown":true} -->
 
 ![woozle](images/woozle.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+Image below from Mark Lewis Tweet: https://twitter.com/marklewismd/status/1576677683408228353?s=20&t=PaaLKiq_z2NxWGVehdSTUw
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Learn & forget the Krebs cycle](images/Learn_forget_the_Krebs_cycle.jpeg)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -127,9 +138,12 @@ I've been making excuses for NOT recording this, but my excuses are all bullshit
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
 
-## What is a metaprogramming... and why should I care?
-
 ## Examples from Elixir's Kernel module (slightly simplifed)
+
+```elixir
+Elixir.Kernel == :"Elixir.Kernel" &&
+  Kernel == Elixir.Kernel
+```
 
 ```
 defmacro !value do
@@ -143,6 +157,27 @@ defmacro !value do
     
   end
 
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+defmacro if(condition, clauses) do  # clauses is a keyword list, e.g. [do: ..., else: ...]
+  build_if(condition, clauses)
+end
+
+defp build_if(condition, do: do_clause) do
+  build_if(condition, do: do_clause, else: nil)
+end
+
+defp build_if(condition, do: do_clause, else: else_clause) do
+  quote do
+    case unquote(condition) do
+      x when :"Elixir.Kernel".in(x, [false, nil]) -> unquote(else_clause)
+      _ -> unquote(do_clause)
+    end
+  end
 end
 ```
 
@@ -164,8 +199,20 @@ IO.inspect(mary, structs: false)
 ```
 
 ```elixir
+mary |> Macro.escape()
+```
+
+```elixir
 quote do
   %{__struct__: Human, age: 28, name: "Mary"}
+end
+```
+
+```elixir
+escaped = mary |> Macro.escape()
+
+quote do
+  unquote(escaped)
 end
 ```
 
@@ -250,7 +297,58 @@ quoted |> Code.eval_quoted()
 * **Harder to understand** code
 * **Requires thinking about both compilation-time code execution and runtime-code execution**
 
-## Marlus Saraiva: https://www.youtube.com/watch?v=ChGSLUVe5Gs
+## Jay Hayes - Elixir in Elixir
+
+https://www.youtube.com/watch?v=p8MGNw045AE
+
+```elixir
+quote do
+  :lol = :wat
+end
+```
+
+```elixir
+quote do
+  :lol = :wat
+end == {:=, [], [:lol, :wat]}
+```
+
+```elixir
+:lol = :wat
+```
+
+![bad_match](images/bad_match.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![match_error](images/match_error.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Expression.match?](images/expression_match.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Expression.match? 2](images/expression_match_2.png)
+
+```elixir
+num = 42
+quote do: 1 + num
+```
+
+```elixir
+num = 42
+quote do: 1 + unquote(num)
+```
+
+```elixir
+quote do
+  1 + unquote(num)
+end
+|> Code.eval_quoted()
+```
+
+## Marlus Saraiva - Surface, HEEX and the Power of Choice
 
 https://www.youtube.com/watch?v=ChGSLUVe5Gs
 
