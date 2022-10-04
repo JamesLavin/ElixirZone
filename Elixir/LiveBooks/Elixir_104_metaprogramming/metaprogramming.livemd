@@ -141,6 +141,14 @@ I've been making excuses for NOT recording this, but my excuses are all bullshit
 ## Examples from Elixir's Kernel module (slightly simplifed)
 
 ```elixir
+Kernel.__info__(:macros)
+```
+
+```elixir
+Kernel.SpecialForms.__info__(:macros)
+```
+
+```elixir
 Elixir.Kernel == :"Elixir.Kernel" &&
   Kernel == Elixir.Kernel
 ```
@@ -153,6 +161,23 @@ defmacro !value do
     case unquote(value) do
       x when :"Elixir.Kernel".in(x, [false, nil]) -> true
       _ -> false
+    end
+    
+  end
+
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+defmacro !{:!, _, [value]} do
+
+  quote do
+
+    case unquote(value) do
+      x when :"Elixir.Kernel".in(x, [false, nil]) -> false
+      _ -> true
     end
     
   end
@@ -191,7 +216,6 @@ end
 
 ```elixir
 mary = %Human{name: "Mary", age: 28}
-mary
 ```
 
 ```elixir
@@ -199,7 +223,42 @@ IO.inspect(mary, structs: false)
 ```
 
 ```elixir
+quote do
+  %Human{name: "Mary", age: 28}
+end
+```
+
+```elixir
+quote do
+  {:a, :b, :c}
+end
+```
+
+```elixir
+this_val = {:a, :b, :c}
+
+quote do
+  this_val
+end
+```
+
+```elixir
+{:a, :b, :c} |> Macro.escape()
+```
+
+```elixir
+that_val = {:a, :b, :c}
+that_val |> Macro.escape()
+```
+
+```elixir
 mary |> Macro.escape()
+```
+
+```elixir
+quote do
+  mary
+end
 ```
 
 ```elixir
@@ -267,6 +326,38 @@ quoted |> Code.eval_quoted()
       value
     end
   end
+```
+
+```elixir
+defmodule FooBar do
+  kv = [foo: 1, bar: 2]
+
+  Enum.each(kv, fn {k, v} ->
+    def unquote(k)(), do: unquote(v)
+  end)
+end
+```
+
+```elixir
+FooBar.foo() + FooBar.bar()
+```
+
+```elixir
+defmodule FooBar2 do
+  kv = [foo: 1, bar: 2]
+
+  Enum.each(kv, fn {k, v} ->
+    def unquote(k)(extra \\ 0), do: unquote(v) + extra
+  end)
+end
+```
+
+```elixir
+FooBar2.foo() + FooBar2.bar()
+```
+
+```elixir
+FooBar2.foo(2) + FooBar2.bar(-4)
 ```
 
 ## What is a metaprogramming... and why should I care?
@@ -347,6 +438,28 @@ quote do
 end
 |> Code.eval_quoted()
 ```
+
+![:elixir_module.compile](images/elixir_module_compile.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![:elixir_module.compile 2](images/elixir_module_compile_2.png)
+
+## Tyler Pachal - Metaprogramming for Dummies
+
+https://www.youtube.com/watch?v=DFa1bC95wxA
+
+<!-- livebook:{"break_markdown":true} -->
+
+![tyler_1](images/tyler_1.png)
+![tyler_2](images/tyler_2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![decompile_1](images/decompile_1.png)
+![decompile_2](images/decompile_2.png)
+![decompile_3](images/decompile_3.png)
+![decompile_4](images/decompile_4.png)
 
 ## Marlus Saraiva - Surface, HEEX and the Power of Choice
 
