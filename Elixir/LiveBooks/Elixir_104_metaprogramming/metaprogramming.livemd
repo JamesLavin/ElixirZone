@@ -847,6 +847,85 @@ areamacro2_ast |> Checker.check()
 > Example:
 > ![Macro.prewalk()](images/Macro.prewalk.png)
 
+## bind_quoted & execution context of unquote()
+
+The following is one small portion of Daniel Xu's excellent article, "The Minimum Knowledge You Need to Start Metaprogramming in Elixir," https://dockyard.com/blog/2016/08/16/the-minumum-knowledge-you-need-to-start-metaprogramming-in-elixir
+
+```elixir
+defmodule M do
+  defmacro my_macro(name) do
+    IO.puts(1)
+
+    quote do
+      IO.puts(4)
+      unquote(IO.puts(2))
+      IO.puts("hello, #{unquote(name)}")
+    end
+  end
+end
+
+defmodule Create do
+  import M
+
+  IO.puts(3)
+  my_macro("hello")
+end
+```
+
+```elixir
+defmodule M do
+  defmacro my_macro(name) do
+    IO.puts(1)
+
+    quote bind_quoted: [name: name] do
+      IO.puts(4)
+
+      def unquote(name)() do
+        unquote(IO.puts(2))
+        IO.puts("hello, #{unquote(name)}")
+      end
+    end
+  end
+end
+
+defmodule Create do
+  import M
+
+  IO.puts(3)
+  my_macro(:hello)
+end
+```
+
+```elixir
+defmodule M do
+  defmacro my_macro(name) do
+    IO.puts(1)
+
+    quote bind_quoted: [name: name] do
+      IO.puts(4)
+
+      def unquote(name)() do
+        unquote(IO.puts(2))
+        IO.puts("hello, #{unquote(name)}")
+      end
+    end
+  end
+end
+
+defmodule Create do
+  import M
+
+  IO.puts(3)
+
+  [:foo, :bar]
+  |> Enum.each(&my_macro(&1))
+end
+```
+
+```elixir
+{Create.foo(), Create.bar()}
+```
+
 ## Macro.escape()
 
 ```elixir
