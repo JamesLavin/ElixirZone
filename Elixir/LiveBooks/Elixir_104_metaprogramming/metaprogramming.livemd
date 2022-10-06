@@ -1,4 +1,4 @@
-# Metaprogramming Elixir (ElixirZone - James Lavin)
+# ElixirZone: Metaprogramming Elixir - James Lavin)
 
 ## No videos for seven months?!?! Are you dead?
 
@@ -65,6 +65,17 @@ BOOKS:
 
 ## Elixir metaprogramming... Words of warning
 
+You may not need this!
+
+* You can go very far with Elixir without deep knowledge of metaprogramming/macros (or OTP/concurrency) because these benefits are baked into popular and powerful libraries and frameworks. E.g.:
+  * Phoenix lets you spin up millions of simultaneous & completely isolated web socket connections by leveraging OTP
+  * Phoenix lets you create routes dynamically through its easy-to-use DSL built with metaprogramming
+  * Phoenix lets you generate powerful functions into your controllers with a single call to `use`
+  * Phoenix's HEEx templates are another powerful DSL
+  * Ecto's power and simplicity derive from its DSL, possible through metaprogramming
+
+<!-- livebook:{"break_markdown":true} -->
+
 https://en.wikipedia.org/wiki/Woozle_effect
 
 <!-- livebook:{"break_markdown":true} -->
@@ -117,12 +128,18 @@ Would be great, but they've already given us SO much. Just an idea... NOT a requ
 
 I've been making excuses for NOT recording this, but my excuses are all bullshit...
 
-| My Excuse                                                         | Why it's bullshit                                                                                                            | Implication for you                                                                                                                                                                                     |
+| My Excuse                                                         | Why It's Bullshit                                                                                                            | Implication For You                                                                                                                                                                                     |
 | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | I don't know everything and will waste people's time              | Having just SOME knowledge can be an ADVANTAGE in teaching... Curse of Knowledge                                             | Each of YOU knows things well enough to teach those who know less                                                                                                                                       |
-| I don't know everything and don't want to embarrass myself        | "Imposter Syndrome" is very real. I know enough to help metaprogramming newbies                                              | Everyone feels "imposter syndrome," so don't let that prevent you from sharing what you DO know                                                                                                         |
+| I don't know everything and don't want to embarrass myself        | "Imposter Syndrome" is very real. I know enough to help metaprogramming newbies                                              | Most of us suffer from "imposter syndrome" and perfectionism. Don't let them win. Share what you DO know                                                                                                |
 | The world is crumbling all around us                              | True, but Russia's invasion, rising fascism, and global warming are beyond my control, aside from small things I can/must do | Each of us should try to make the world better and happier however we can, especially when things are bleak. Don't cower at the size of the challenge. Do what you can and others will do what they can |
 | I've been working on something super cool and de-prioritized this | Okay, but it has been 7 months                                                                                               | Prioritize & balance your life. Avoid going 100% on any one area                                                                                                                                        |
+
+<!-- livebook:{"break_markdown":true} -->
+
+The Tweets that got me off my butt to finish this after 7+ months in mothballs:
+![Solnica](images/Solnica.png)
+![Joshi](images/Joshi.png)
 
 ## Additional resources
 
@@ -381,6 +398,15 @@ FooBar2.foo(2) + FooBar2.bar(-4)
 
 <!-- livebook:{"break_markdown":true} -->
 
+![logger_0](images/logger_0.png)
+![logger_1](images/logger_1.png)
+![logger_2](images/logger_2.png)
+![maybe_log](images/maybe_log.png)
+![logger_3](images/logger_3.png)
+![require](images/require.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
 ### Metaprogramming Costs
 
 * Introduces an additional layer of **indirection/abstraction**
@@ -461,6 +487,18 @@ https://www.youtube.com/watch?v=DFa1bC95wxA
 ![decompile_3](images/decompile_3.png)
 ![decompile_4](images/decompile_4.png)
 
+## Sasha Fondeca - Metaprogramming With Elixir
+
+https://www.youtube.com/watch?v=uBWFBU97Qkw
+
+<!-- livebook:{"break_markdown":true} -->
+
+![pixels_1](images/pixels_1.png)
+![pixels_2](images/pixels_2.png)
+![pixels_3](images/pixels_3.png)
+![pixels_4](images/pixels_4.png)
+![pixels_5](images/pixels_5.png)
+
 ## Marlus Saraiva - Surface, HEEX and the Power of Choice
 
 https://www.youtube.com/watch?v=ChGSLUVe5Gs
@@ -537,17 +575,54 @@ https://www.youtube.com/watch?v=-mgwW3RVI50
 
 ![compilation](images/compilation.png)
 
-## Jesse Anderson: https://www.youtube.com/watch?v=Bo48sQDb-hk
+## Jesse Anderson: Don't Write Macros But Do Learn How They Work
 
 * https://www.youtube.com/watch?v=Bo48sQDb-hk
 
 <!-- livebook:{"break_markdown":true} -->
 
+![jesse_1](images/jesse_1.png)
 ![compilation process](images/compilation_process.png)
 
 <!-- livebook:{"break_markdown":true} -->
 
 ![literals & tuples](images/literals_and_tuples.png)
+![jesse 2](images/jesse_2.png)
+![jesse 3](images/jesse_3.png)
+
+```elixir
+if_ast = quote do: if(var!(x) == var!(y), do: "yeah", else: "nah")
+```
+
+```elixir
+if_ast |> Macro.to_string() |> IO.puts()
+```
+
+```elixir
+if_ast |> Code.eval_quoted(x: 7, y: 9)
+```
+
+```elixir
+if_ast |> Code.eval_quoted(x: 19, y: 19)
+```
+
+## Andrew Summers - Domain Specific Languages and Metaprogramming in Elixir
+
+![Andrew David Summers](images/Andrew_David_Summers.png)
+![andrew_summers_0](images/andrew_summers_0.png)
+![andrew_summers_1](images/andrew_summers_1.png)
+![andrew_summers_2](images/andrew_summers_2.png)
+![andrew_summers_3](images/andrew_summers_3.png)
+![andrew_summers_4](images/andrew_summers_4.png)
+![andrew_summers_5](images/andrew_summers_5.png)
+![andrew_summers_6](images/andrew_summers_6.png)
+![andrew_summers_7](images/andrew_summers_7.png)
+![andrew_summers_8](images/andrew_summers_8.png)
+![andrew_summers_9](images/andrew_summers_9.png)
+![andrew_summers_10](images/andrew_summers_10.png)
+![andrew_summers_11](images/andrew_summers_11.png)
+
+## Let's Play With Metaprogramming!
 
 ```elixir
 # runtime evaluation
@@ -594,8 +669,6 @@ AreaMacro.circle(2)
 ```
 
 ```elixir
-# Macro function
-
 defmodule AreaMacro2 do
   defmacro __using__(opts) do
     case opts do
@@ -611,6 +684,12 @@ defmodule AreaMacro2 do
           def area(side) do
             :math.pow(side, 2)
           end
+        end
+
+      other when is_binary(other) ->
+        quote location: :keep, bind_quoted: [opts: opts] do
+          other = other |> String.to_atom()
+          IO.inspect("Do not recognize shape #{other}")
         end
     end
   end
@@ -722,7 +801,68 @@ madlib =
 
 ![plus](images/plus.png)
 
-<!-- livebook:{"break_markdown":true} -->
+## Macro.postwalk() ...and Macro.prewalk()
+
+This is a MUCH simplified version of just one part of Argentinian Lucas San Román's 3-part series at https://dorgan.netlify.app/posts/2021/04/the_elixir_ast/. I recommend the whole series to you!
+
+```elixir
+filepath =
+  "/Users/jameslavin/Git/ElixirZone/Elixir/LiveBooks/Elixir_104_Metaprogramming/AreaMacro2.ex"
+
+areamacro2_ast =
+  filepath
+  |> Path.expand()
+  |> File.read!()
+  |> Code.string_to_quoted!(columns: true)
+```
+
+```elixir
+defmodule Checker do
+  @warning "You can create only a finite number of atoms. You should not be generating them dynamically from strings."
+
+  def check(ast) do
+    {_ast, issues} = Macro.postwalk(ast, [], &handle_node/2)
+    issues
+  end
+
+  defp handle_node({{:., _, [{:__aliases__, _, [:String]}, :to_atom]}, meta, _args} = node, acc) do
+    issue = %{
+      warning: @warning,
+      line: meta[:line],
+      column: meta[:column]
+    }
+
+    {node, [issue | acc]}
+  end
+
+  defp handle_node(node, acc), do: {node, acc}
+end
+
+areamacro2_ast |> Checker.check()
+```
+
+## Macro.escape()
+
+```elixir
+long_tuple = {:x, :y, :z}
+
+inspect_long_tuple_ast = quote do: IO.inspect(unquote(long_tuple))
+```
+
+```elixir
+# throws an ArgumentError because {:x, :y, :z} is not valid AST
+
+# inspect_long_tuple_ast |> Code.eval_quoted()
+```
+
+```elixir
+long_tuple = {:x, :y, :z} |> Macro.escape()
+# returns {:{}, [], [:x, :y, :z]}
+
+inspect_long_tuple_ast = quote do: IO.inspect(unquote(long_tuple))
+
+inspect_long_tuple_ast |> Code.eval_quoted()
+```
 
 ![inlining](images/inlining.png)
 
