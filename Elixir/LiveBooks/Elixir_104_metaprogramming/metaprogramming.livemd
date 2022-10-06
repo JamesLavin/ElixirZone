@@ -841,6 +841,12 @@ end
 areamacro2_ast |> Checker.check()
 ```
 
+`Macro.prewalk` and `Macro.postwalk` can be used not only to report on AST but to MODIFY AST, as the documentation explains:
+
+> Returns a new AST where each node is the result of invoking fun on each corresponding node of ast.
+> Example:
+> ![Macro.prewalk()](images/Macro.prewalk.png)
+
 ## Macro.escape()
 
 ```elixir
