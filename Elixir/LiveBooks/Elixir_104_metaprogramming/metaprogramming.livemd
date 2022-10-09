@@ -52,8 +52,11 @@ BOOKS:
 * Alex Korb, *The Upward Spiral*
 * Matthew Walker, *Why We Sleep*
 * Vivek H. Murthy, *Together*
+* Daniel E. Lieberman, *Exercised*
 
 ## Elixir metaprogramming... Words of encouragement
+
+* Metaprogramming: "abus[ing] Elixir syntax for fun and profit" (Chris McCord, *Metaprogramming Elixir*, p. 104)
 
 * Metaprogramming is powerful but hard/confusing/frustrating to learn.
 
@@ -147,9 +150,19 @@ The Tweets that got me off my butt to finish this after 7+ months in mothballs:
 * https://elixir-lang.org/getting-started/meta/macros.html
 * https://repo.hex.pm/guides/elixir/meta-programming-in-elixir.epub
 * https://dockyard.com/blog/2016/08/16/the-minumum-knowledge-you-need-to-start-metaprogramming-in-elixir
-* https://www.theerlangelist.com/article/macros_1 (first of six blog posts by the great Saša Jurić)
+* Six blog posts by the great Saša Jurić
+  * https://www.theerlangelist.com/article/macros_1
+  * https://www.theerlangelist.com/article/macros_2
+  * https://www.theerlangelist.com/article/macros_3
+  * https://www.theerlangelist.com/article/macros_4
+  * https://www.theerlangelist.com/article/macros_5
+  * https://www.theerlangelist.com/article/macros_6
 * https://www.crustofcode.com/tag/macros/
-* https://blog.appsignal.com/2021/09/07/an-introduction-to-metaprogramming-in-elixir.html
+* Jia Hao Woo:
+  * https://blog.appsignal.com/2021/09/07/an-introduction-to-metaprogramming-in-elixir.html
+  * https://blog.appsignal.com/2021/10/05/under-the-hood-of-macros-in-elixir.html
+  * https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
+  * https://blog.appsignal.com/2021/11/16/pitfalls-of-metaprogramming-in-elixir.html
 * Chris McCord's *Metaprogramming Elixir* book
 * Elixir books' chapters on metaprogramming
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
@@ -1320,6 +1333,13 @@ unless true, do: :a, else: :b
 ```
 
 ```elixir
+quote do
+  unless true, do: :a, else: :b
+end
+|> Macro.expand(__ENV__)
+```
+
+```elixir
 # This is compiled and then immediately evaluated, but it throws an error
 # because the variable `unset_value` has no value
 unless unset_value, do: "yay", else: "boo"
@@ -2198,6 +2218,8 @@ Culture.unladen_swallow_airspeed()
 Source: Jia Hao Woo, https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
 
 Chris McCord's metaprogramming book has a very similar example
+
+Jia Hao Woo published four metaprogramming articles at: https://blog.appsignal.com/authors/jia-hao-woo
 
 <!-- livebook:{"break_markdown":true} -->
 
