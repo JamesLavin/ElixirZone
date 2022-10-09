@@ -168,6 +168,44 @@ The Tweets that got me off my butt to finish this after 7+ months in mothballs:
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
 
+## decompile (Michał Muskała)
+
+![decompile_1](images/decompile_1.png)
+![decompile_2](images/decompile_2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+mix decompile Elixir.SiliconBrainWeb.Router --to expanded
+```
+
+routes.ex: 118 lines, including comments:
+![118 lines in ex file](images/routes_ex_118_lines.png)
+compiled routes.ex file: 2,180 lines:
+![2,180 lines in ex file](images/routes_ex_compiled_2180_lines.png)
+consumed.ex: 711 lines, including comments, docs, and examples:
+![711 lines in ex file](images/consumed_ex_711_lines.png)
+consumed.ex compiled: 1,463 lines:
+![1,463 lines in ex file](images/consumed_ex_compiled_1463_lines.png)
+
+## Simple macro example
+
+```elixir
+defmodule UnlessTrue do
+  defmacro unless(boolean_exp, do: false_case) do
+    quote do
+      if !unquote(boolean_exp), do: unquote(false_case)
+    end
+  end
+end
+```
+
+![obviously_true_ex.png](images/obviously_true_ex.png)
+![Elixir.ObviouslyTrue_ex.png](images/Elixir.ObviouslyTrue_ex.png)
+![possibly_true_ex.png](images/possibly_true_ex.png)
+![Elixir.PossiblyTrue_ex.png](images/Elixir.PossiblyTrue_ex.png)
+![possibly_true_execute.png](images/possibly_true_execute.png)
+
 ## Examples from Elixir's Kernel module (slightly simplifed)
 
 ```elixir
@@ -273,7 +311,15 @@ end
 ```
 
 ```elixir
+# Macro.escape() tranforms Elixir values --> AST values
+
 {:a, :b, :c} |> Macro.escape()
+```
+
+```elixir
+quote do
+  that_val
+end
 ```
 
 ```elixir
@@ -282,13 +328,13 @@ that_val |> Macro.escape()
 ```
 
 ```elixir
-mary |> Macro.escape()
-```
-
-```elixir
 quote do
   mary
 end
+```
+
+```elixir
+mary |> Macro.escape()
 ```
 
 ```elixir
@@ -392,7 +438,7 @@ FooBar2.foo(2) + FooBar2.bar(-4)
 
 ## What is a metaprogramming... and why should I care?
 
-### Benefits
+### Why learn metaprogramming?
 
 * **Understand Elixir** itself, most of which is created using Elixir macros
   * Examples: `def`, `defmodule`, `if`, `unless`, etc.
@@ -400,7 +446,7 @@ FooBar2.foo(2) + FooBar2.bar(-4)
 * **Extend the Elixir syntax** with declarative functions that keep your code clean/sparse
   * Example: `then` was only recently added, but you could have added it long ago
 * **Create functions dynamically**, perhaps from data in a file
-  * Example: functions to capitalize Unicode.
+  * Example: functions to generate Unicode functions (e.g., capitalize) dynamically from  Unicode file
 * **Create your own DSLs** (domain-specific languages):
   * Phoenix
   * Ecto
@@ -408,15 +454,38 @@ FooBar2.foo(2) + FooBar2.bar(-4)
   * https://rdf-elixir.dev/
   * https://github.com/Revmaker/gremlex
 * **Create reusable compile-time code** by extracting code you wish to `use` in multiple modules into a code block dynamically injectable via the `defmacro __using__(opts)` macro
+* **Optimize your code**:
+  * The compiler can simplify or optimize your code based on opts passed in at compliation time
+    * If you specify a log level of `:warning`, `Logger.warning` calls will be compiled into your code, but `Logger.info` calls will not
 
-<!-- livebook:{"break_markdown":true} -->
+## Compilation-time code generation from external files
+
+See Chris McCord's "Metaprogramming Elixir" book, pages 43-58, for additional explanation.
+
+UnicodeData.txt:
+![UnicodeData.txt](images/UnicodeData.txt.png)
+
+Unicode.ex generates String.Unicode:
+![unicode_ex.png](images/unicode_ex.png)
+
+String.Unicode constituted from functions generated from .txt files:
+![String.Unicode.png](images/String.Unicode.png)
+
+## Compilation-time code generation from API responses
+
+In Chris McCord's "Metaprogramming Elixir" book, pages 59-61, he shows a 20-line module that dynamically creates an Elixir function for displaying all Github repos owned by a user and dynamically creates two functions per repo, one for displaying all details of the repo and the other for opening the repo in your browser.
+
+## Compilation-time code elimination
 
 ![logger_0](images/logger_0.png)
 ![logger_1](images/logger_1.png)
 ![logger_2](images/logger_2.png)
 ![maybe_log](images/maybe_log.png)
 ![logger_3](images/logger_3.png)
-![require](images/require.png)
+
+## Before invoking a macro, you must `require` it
+
+![require](images/require.png)![require](images/require.png)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -495,8 +564,6 @@ https://www.youtube.com/watch?v=DFa1bC95wxA
 
 <!-- livebook:{"break_markdown":true} -->
 
-![decompile_1](images/decompile_1.png)
-![decompile_2](images/decompile_2.png)
 ![decompile_3](images/decompile_3.png)
 ![decompile_4](images/decompile_4.png)
 
@@ -533,7 +600,7 @@ Benefits of LiveView Surface's Macro Components:
 
 ![for vs. for](images/for_vs_for.png)
 
-## Qing Wu (?): https://www.youtube.com/watch?v=CHHQ_xzv4pw
+## Qing Wu: A Gentle Introduction to Elixir Macros
 
 https://www.youtube.com/watch?v=CHHQ_xzv4pw (doesn't indicate the speaker's name)
 https://www.youtube.com/watch?v=X8QfT7BNE44 is from Qing Wu, who I believe is the same presenter)
@@ -546,7 +613,7 @@ https://www.youtube.com/watch?v=X8QfT7BNE44 is from Qing Wu, who I believe is th
 
 ![simple timer](images/simple_timer.png)
 
-## Billy Ceskavich: https://www.youtube.com/watch?v=F7qaIqcaTDc
+## Billy Ceskavich: Is Elixir Just Lisp?
 
 https://www.youtube.com/watch?v=F7qaIqcaTDc
 
@@ -562,7 +629,7 @@ https://www.youtube.com/watch?v=F7qaIqcaTDc
 
 ![defmacro def](images/defmacro_def.png)
 
-## Bryan Weber: https://www.youtube.com/watch?v=-mgwW3RVI50
+## Bryan Weber: Code Generation in Elixir
 
 https://www.youtube.com/watch?v=-mgwW3RVI50
 
@@ -1079,7 +1146,7 @@ defmodule MyCaller do
 end
 ```
 
-## Dynamic function names
+## Dynamic function names (using "unquote fragments")
 
 ```elixir
 defmodule TalkingHeads do
@@ -1087,6 +1154,7 @@ defmodule TalkingHeads do
   # @funs [{:ask_yourself, "How did I get here?"}, {:no_party, "No disco!"}]
 
   for {k, v} <- @funs do
+    def unquote(k)(answer), do: answer
     def unquote(k)(), do: unquote(v)
   end
 end
@@ -1094,6 +1162,10 @@ end
 
 ```elixir
 TalkingHeads.ask_yourself()
+```
+
+```elixir
+
 ```
 
 ```elixir
@@ -2217,7 +2289,7 @@ Culture.unladen_swallow_airspeed()
 
 Source: Jia Hao Woo, https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
 
-Chris McCord's metaprogramming book has a very similar example
+Chris McCord's "Metaprogramming Elixir" book has a very similar example on pages 39-42.
 
 Jia Hao Woo published four metaprogramming articles at: https://blog.appsignal.com/authors/jia-hao-woo
 
