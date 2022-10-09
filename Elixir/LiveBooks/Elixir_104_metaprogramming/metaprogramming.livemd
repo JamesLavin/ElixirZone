@@ -454,6 +454,8 @@ FooBar2.foo(2) + FooBar2.bar(-4)
   * Even `defmacro` is defined using `defmacro`! (Don't ask me how!)
 * **Extend the Elixir syntax** with declarative functions that keep your code clean/sparse
   * Example: `then` was only recently added, but you could have added it long ago
+* **Debug with greater confidence**
+  * When debugging, we'll often wander into macros and other metaprogramming. The more familiar you are with these techniques, the better equipped you'll be to debug your problem.
 * **Create functions dynamically**, perhaps from data in a file
   * Example: functions to generate Unicode functions (e.g., capitalize) dynamically from  Unicode file
 * **Create your own DSLs** (domain-specific languages):
@@ -483,6 +485,8 @@ String.Unicode constituted from functions generated from .txt files:
 <!-- livebook:{"break_markdown":true} -->
 
 ![@external_resource](images/external_resource.png)
+
+See Chris McCord's "Metaprogramming Elixir" pp. 48-49 for more.
 
 ## Compilation-time code generation from API responses
 
@@ -2320,3 +2324,11 @@ Jia Hao Woo published four metaprogramming articles at: https://blog.appsignal.c
 <!-- livebook:{"break_markdown":true} -->
 
 ![accumulate](images/accumulate.png)
+
+## Testing macros
+
+In "Metaprogramming Elixir" (page 69), Chris McCord advises you to test your generated code, not the macro code generation process directly.
+
+For more, you might find this talk useful:
+
+[Debugging Elixir Code - The Tools, The Mindset - Michal Buszkiewicz (ElixirConf EU 2021)](https://www.youtube.com/watch?v=x9OMlrrKYyE)
