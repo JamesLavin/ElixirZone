@@ -146,9 +146,18 @@ The Tweets that got me off my butt to finish this after 7+ months in mothballs:
 
 ## Additional resources
 
-* https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
-* https://elixir-lang.org/getting-started/meta/macros.html
-* https://repo.hex.pm/guides/elixir/meta-programming-in-elixir.epub
+* Elixir documentation:
+  * https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
+  * https://elixir-lang.org/getting-started/meta/macros.html
+  * https://hexdocs.pm/elixir/1.14/Code.html
+  * https://hexdocs.pm/elixir/1.14/Macro.html
+  * https://hexdocs.pm/elixir/1.14/Macro.Env.html
+  * https://hexdocs.pm/elixir/1.14.0/Module.html
+  * https://hexdocs.pm/elixir/1.14/Kernel.SpecialForms.html
+    * https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#quote/2
+    * https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#unquote/1
+    * https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#unquote_splicing/1
+  * https://repo.hex.pm/guides/elixir/meta-programming-in-elixir.epub
 * https://dockyard.com/blog/2016/08/16/the-minumum-knowledge-you-need-to-start-metaprogramming-in-elixir
 * Six blog posts by the great Saša Jurić
   * https://www.theerlangelist.com/article/macros_1
@@ -164,7 +173,7 @@ The Tweets that got me off my butt to finish this after 7+ months in mothballs:
   * https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
   * https://blog.appsignal.com/2021/11/16/pitfalls-of-metaprogramming-in-elixir.html
 * Chris McCord's *Metaprogramming Elixir* book
-* Elixir books' chapters on metaprogramming
+* Dave Thomas's *Programming Elixir* book's chapter on metaprogramming
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
 * https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
 
@@ -471,6 +480,10 @@ Unicode.ex generates String.Unicode:
 String.Unicode constituted from functions generated from .txt files:
 ![String.Unicode.png](images/String.Unicode.png)
 
+<!-- livebook:{"break_markdown":true} -->
+
+![@external_resource](images/external_resource.png)
+
 ## Compilation-time code generation from API responses
 
 In Chris McCord's "Metaprogramming Elixir" book, pages 59-61, he shows a 20-line module that dynamically creates an Elixir function for displaying all Github repos owned by a user and dynamically creates two functions per repo, one for displaying all details of the repo and the other for opening the repo in your browser.
@@ -748,6 +761,8 @@ require AreaMacro
 AreaMacro.circle(2)
 ```
 
+## use && __using__/1
+
 ```elixir
 defmodule AreaMacro2 do
   defmacro __using__(opts) do
@@ -787,6 +802,10 @@ end
 
 {Circle.area(2), Square.area(2)}
 ```
+
+On p. 99 of "Metaprogramming Elixir," Chris tells us to avoid using `use` just for mix-ins.
+
+`alias` or `import` is fine for just pulling in functions to DRY up your code. Or you can just call functions using their fully qualified names.
 
 ```elixir
 Circle
@@ -1147,6 +1166,11 @@ end
 ```
 
 ## Dynamic function names (using "unquote fragments")
+
+For more on unquote fragments, see:
+
+* https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#quote/2
+* Chris McCord's "Metaprogramming Elixir" pp. 46-48
 
 ```elixir
 defmodule TalkingHeads do
