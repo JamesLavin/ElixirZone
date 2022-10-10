@@ -1547,15 +1547,13 @@ end
 ```elixir
 # Fails with ** (CompileError) nofile:1: undefined variable "three"
 
-# quote do if(var!(one) + var!(two) == var!(three), do: "this", else: "that") end
-# |> Code.eval_quoted([one: 1, two: 2])
+quote do
+  if(var!(one) + var!(two) == var!(three), do: "this", else: "that")
+end
+|> Code.eval_quoted(one: 1, two: 2)
 ```
 
-```elixir
-madlib =
-  quote do
-  end
-```
+## Delegate to Erlang functions whenever possible
 
 ![plus](images/plus.png)
 
@@ -1765,7 +1763,7 @@ Function args are always evaluated when the function gets called!
 
 To avoid that, we use macros, which receive AST, which represents unevaluatable data structures that have not (yet) been evaluated.
 
-## Nicholas J. Henry: https://www.youtube.com/watch?v=xj6yNzcGlEE
+## Nicholas J. Henry - The Upside Down Dimension of Elixir
 
 * https://www.youtube.com/watch?v=xj6yNzcGlEE
 * https://www.youtube.com/watch?v=EFAgc7YqDP8
@@ -1774,7 +1772,7 @@ To avoid that, we use macros, which receive AST, which represents unevaluatable 
 
 ![def vs defmacro](images/def_defmacro.png)
 
-## Adi Iyengar: https://www.youtube.com/watch?v=oikF1Ze2Vao
+## Adi Iyengar: The Pillars of Metaprogramming in Elixir
 
 * https://www.youtube.com/watch?v=oikF1Ze2Vao
 
@@ -1782,7 +1780,7 @@ To avoid that, we use macros, which receive AST, which represents unevaluatable 
 
 ![quote as AST](images/quote_as_ast.png)
 
-## Lizzie Paquette: https://www.youtube.com/watch?v=55-X7rSw8M0
+## Lizzie Paquette: Responsible Code Generation
 
 https://www.youtube.com/watch?v=55-X7rSw8M0
 
@@ -1802,6 +1800,10 @@ https://www.youtube.com/watch?v=55-X7rSw8M0
 <!-- livebook:{"break_markdown":true} -->
 
 ![macro contexts](images/macro_contexts.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Brex.Struct](images/brex.struct.png)
 
 ```elixir
 defmodule MyMod do
@@ -1848,11 +1850,41 @@ TalkingHeads.ask_yourself()
 ```
 
 ```elixir
-
+TalkingHeads.no_party()
 ```
 
 ```elixir
-TalkingHeads.no_party()
+TalkingHeads.ask_yourself("By taxi")
+```
+
+After I run:
+
+```
+elixirc talking_heads.ex
+mix decompile Elixir.TalkingHeads.beam --to expanded
+vi Elixir.TalkingHeads.ex
+```
+
+I see basically what the compiled BEAM file logic looks like:
+
+```elixir
+defmodule TalkingHeads do
+  def no_party(answer) do
+    answer
+  end
+
+  def no_party() do
+    "No disco!"
+  end
+
+  def ask_yourself(answer) do
+    answer
+  end
+
+  def ask_yourself() do
+    "How did I get here?"
+  end
+end
 ```
 
 ## quote/2 transforms Elixir code --> an AST ("abstract syntax tree") data structure
@@ -2008,8 +2040,6 @@ quote(do: sum(1, 2))
 # AST -> String -> AST
 [a: 1, b: 2, c: 3, d: 4, e: 5] |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
 ```
-
-![Brex.Struct](images/brex.struct.png)
 
 ```elixir
 fields = [
