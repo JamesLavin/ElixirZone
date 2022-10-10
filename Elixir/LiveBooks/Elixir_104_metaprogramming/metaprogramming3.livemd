@@ -954,6 +954,8 @@ end
 BestTeam.football()
 ```
 
+## Kernel.is_struct/2
+
 ```elixir
 defmodule Human do
   @enforce_keys [:name, :age]
@@ -1034,8 +1036,14 @@ quoted =
       is_atom(:erlang.map_get(:__struct__, unquote(term_as_ast)))
   end
 
-quoted |> Code.eval_quoted()
+quoted |> Code.eval_quoted() |> elem(0)
 ```
+
+```elixir
+{is_struct(mary), is_struct(mary, Human), is_struct(mary, Ecto.Changeset)}
+```
+
+## Kernel.tap/2
 
 ```elixir
 %{a: 1}
@@ -1052,6 +1060,8 @@ quoted |> Code.eval_quoted()
     end
   end
 ```
+
+## unquote fragments
 
 ```elixir
 defmodule FooBar do
@@ -1158,6 +1168,13 @@ In Chris McCord's "Metaprogramming Elixir" book, pages 59-61, he shows a 20-line
 https://www.youtube.com/watch?v=p8MGNw045AE
 
 ```elixir
+:lol = :wat
+```
+
+```elixir
+# This does NOT throw a MatchError because it's AST describing an
+# assignment, but the assignment is NOT EXECUTED
+
 quote do
   :lol = :wat
 end
@@ -1169,15 +1186,13 @@ quote do
 end == {:=, [], [:lol, :wat]}
 ```
 
+If we attempt to execute/evaluate it, it will blow up:
+
 ```elixir
-:lol = :wat
+{:=, [], [:lol, :wat]} |> Code.eval_quoted()
 ```
 
-![bad_match](images/bad_match.png)
-
-<!-- livebook:{"break_markdown":true} -->
-
-![match_error](images/match_error.png)
+Jay then uses pattern-matching to define an `Expression.match?/1` function returning a Boolean representing whether the argument represents a match/assignment:
 
 <!-- livebook:{"break_markdown":true} -->
 
