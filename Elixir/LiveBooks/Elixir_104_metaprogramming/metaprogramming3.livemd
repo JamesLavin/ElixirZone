@@ -1,0 +1,2453 @@
+# ElixirZone: Metaprogramming Elixir - James Lavin
+
+## No videos for 7 1/2 months?!?! Are you dead?
+
+Fortunately, I'm NOT dead.
+
+My job keeps me very busy
+
+I've slowed down on ElixirZone to spend more of my nights and weekends building a product I've wanted to build for a decade.
+
+I love preparing and sharing ElixirZone videos with you (though recording & editing is less fun) and really appreciate your appreciative, positive feedback, but my side project is even more exciting.
+
+## You promised us software scalability insights from biology!
+
+This will also be slower than planned due to pouring most of my free time into my side project.
+
+I have continued to learn from and be amazed by biology and know it holds many lessons for scaling computational systems.
+
+If you're interested, here are some great resources I have enjoyed:
+
+RESEARCHERS:
+
+* Michael Levin (I've read a ton of his research and watched a bunch of his Youtube videos... mind-blowing stuff manipulating biology to understand how it works, how to program it, and how collective behavior and intelligence arises), e.g., [Intelligence Beyond the Brain: Morphogenesis as an Example of the Scaling of Basal Cognition](https://www.youtube.com/watch?v=RwEKg5cjkKQ)
+* Nick Lane (mitochondria and the evolution of life... I've bought all his books and watched a number of his lectures. Also mind-blowing), e.g., [How Does Chemistry Come Alive?](https://www.youtube.com/watch?v=QmvS7tgvy6U)
+* Robert Signer (aging) & Shiri Gur-Cohen (stem cells), e.g. [A Closer Look at….Aging](https://www.youtube.com/watch?v=dVCuUNsGifQ)
+* Steve Strogatz (synchronization), e.g., [The Story of Sync](https://www.youtube.com/watch?v=RpU7JrE1uCk)
+* Veronica O'Keane, [How We Make Memories and How Memories Make Us](https://www.youtube.com/watch?v=TZMYvnL8dfI)
+
+BOOKS:
+
+* Donna Jackson Nakazawa, *The Angel and the Assassin*
+* Peter M. Hoffman, *Life's Ratchet* (recommended by an ElixirZone subscriber. Thanks!)
+* Paul G. Falkowski, *Life's Engines*
+* Beronda L. Montgomery, *Lessons from Plants*
+* Carl Zimmer, *Life's Edge*
+* Lee Know, *Mitochondria and the Future of Medicine*
+* Steven Strogatz, *Sync*
+* Nick Lane, *Power, Sex, Suicide* (this prof is amazing... has authored a handful of great books)
+* Mark Humphries, *The Spike*
+* Athena Aktipis, *The Cheating Cell*
+* Benjamin Bikman, *Why We Get Sick*
+* Merlin Sheldrake, *Entangled Life*
+* Antonio Damasio, *The Strange Order of Things*
+* Jeremy DeSilva, *First Steps*
+* Walter Isaacson, *The Code Breaker*
+* Dean Buonomano, *Your Brain Is a Time Machine*
+* Alex Bezzerides, *Evolution Gone Wrong*
+* Giulia Enders, *Gut*
+* Michael Pollan, *Cooked*
+* Frans de Waal, *Are We Smart Enough to Know How Smart Animals Are?* (another amazing prof with multiple fabulous books)
+* Oliver Sacks, *The Mind's Eye* (another prolific researcher/author)
+* Alex Korb, *The Upward Spiral*
+* Matthew Walker, *Why We Sleep*
+* Vivek H. Murthy, *Together*
+* Daniel E. Lieberman, *Exercised*
+
+## Elixir metaprogramming... Words of encouragement
+
+* Metaprogramming: "abus[ing] Elixir syntax for fun and profit" (Chris McCord, *Metaprogramming Elixir*, p. 104)
+
+* Metaprogramming is powerful but hard/confusing/frustrating to learn.
+
+* You won't understand it all the first (or second or third) time through.
+
+* Learning metaprogramming is like seeing "Magic Eye" (https://www.magiceye.com/) the first time. Just keep staring and you'll eventually get it!
+
+* Just keep watching videos and reading blog posts, Chris McCord's book, etc., and you'll slowly get there!
+
+## Elixir metaprogramming... Words of warning
+
+* You may not need this!
+
+  * You can go very far with Elixir without deep knowledge of metaprogramming/macros (or OTP/concurrency)
+  * The benefits of metaproogramming & concurrency * are baked into popular and powerful libraries and frameworks. E.g.:
+    * Phoenix lets you spin up millions of simultaneous & completely isolated web socket connections by leveraging OTP
+    * Phoenix lets you create routes dynamically through its easy-to-use DSL built with metaprogramming
+    * Phoenix lets you generate powerful functions into your controllers with a single call to `use`
+  * Phoenix's HEEx templates are another powerful DSL
+  * Ecto's power and simplicity derive from its DSL, possible through metaprogramming
+
+* Learning metaprogramming requires contorting your brain in unfamiliar ways.
+
+  * Learning (for me) requires seeing a bunch of examples
+  * "Use it or lose it"
+
+<!-- livebook:{"break_markdown":true} -->
+
+https://en.wikipedia.org/wiki/Woozle_effect
+
+<!-- livebook:{"break_markdown":true} -->
+
+![woozle](images/woozle.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+Image below from Mark Lewis Tweet: https://twitter.com/marklewismd/status/1576677683408228353?s=20&t=PaaLKiq_z2NxWGVehdSTUw
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Learn & forget the Krebs cycle](images/Learn_forget_the_Krebs_cycle.jpeg)
+
+<!-- livebook:{"break_markdown":true} -->
+
+* I'm NOT an expert. I've done metaprogramming but only a tiny fraction as often as the true experts have.
+
+* This talk will RAMBLE ON AND ON because:
+
+  * Metaprogramming is hard to grasp, so covering the same ground multiple times from multiple perspectives should help you grasp the concepts more fully
+
+  * I'm too lazy to organize this rambling material better
+
+* EXPERTS are folks like these, who have done 10,000x as much metaprogramming as I have:
+
+<!-- livebook:{"break_markdown":true} -->
+
+![jose](images/jose_valim)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![McCord](images/mccord.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![wojtek](images/wojtek.jpg)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Wojtek giving my son everything he could handle](images/Wojtek_Daryl_pingpong_battle.jpg)
+
+<!-- livebook:{"break_markdown":true} -->
+
+Maybe one of these true experts will record an expert-level metaprogramming video???
+
+Would be great, but they've already given us SO much. Just an idea... NOT a request!
+
+## If I'm no expert, why am I presenting this?
+
+I've been making excuses for NOT recording this, but my excuses are all bullshit...
+
+| My Excuse                                                         | Why It's Bullshit                                                                                                            | Implication For You                                                                                                                                                                                     |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I don't know everything and will waste people's time              | Having just SOME knowledge can be an ADVANTAGE in teaching... Curse of Knowledge                                             | Each of YOU knows things well enough to teach those who know less                                                                                                                                       |
+| I don't know everything and don't want to embarrass myself        | "Imposter Syndrome" is very real. I know enough to help non-expert metaprogrammers                                           | Most of us suffer from "imposter syndrome" and perfectionism. Don't let them win. Share what you DO know                                                                                                |
+| The world is crumbling all around us                              | True, but Russia's invasion, rising fascism, and global warming are beyond my control, aside from small things I can/must do | Each of us should try to make the world better and happier however we can, especially when things are bleak. Don't cower at the size of the challenge. Do what you can and others will do what they can |
+| I've been working on something super cool and de-prioritized this | Okay, but it has been 7 1/2 months                                                                                           | Prioritize & balance your life. Avoid going 100% on any one area                                                                                                                                        |
+
+<!-- livebook:{"break_markdown":true} -->
+
+The Tweets that got me off my butt to finish this after 7+ months in mothballs:
+![Solnica](images/Solnica.png)
+![Joshi](images/Joshi.png)
+
+## Additional resources
+
+* Elixir documentation:
+  * https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
+  * https://elixir-lang.org/getting-started/meta/macros.html
+  * https://hexdocs.pm/elixir/1.14/Code.html
+  * https://hexdocs.pm/elixir/1.14/Macro.html
+  * https://hexdocs.pm/elixir/1.14/Macro.Env.html
+  * https://hexdocs.pm/elixir/1.14.0/Module.html
+  * https://hexdocs.pm/elixir/1.14/Kernel.SpecialForms.html
+    * https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#quote/2
+    * https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#unquote/1
+    * https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#unquote_splicing/1
+  * https://repo.hex.pm/guides/elixir/meta-programming-in-elixir.epub
+* https://dockyard.com/blog/2016/08/16/the-minumum-knowledge-you-need-to-start-metaprogramming-in-elixir
+* Six blog posts by the great Saša Jurić
+  * https://www.theerlangelist.com/article/macros_1
+  * https://www.theerlangelist.com/article/macros_2
+  * https://www.theerlangelist.com/article/macros_3
+  * https://www.theerlangelist.com/article/macros_4
+  * https://www.theerlangelist.com/article/macros_5
+  * https://www.theerlangelist.com/article/macros_6
+* https://www.crustofcode.com/tag/macros/
+* Jia Hao Woo:
+  * https://blog.appsignal.com/2021/09/07/an-introduction-to-metaprogramming-in-elixir.html
+  * https://blog.appsignal.com/2021/10/05/under-the-hood-of-macros-in-elixir.html
+  * https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
+  * https://blog.appsignal.com/2021/11/16/pitfalls-of-metaprogramming-in-elixir.html
+* Chris McCord's *Metaprogramming Elixir* book
+* Dave Thomas's *Programming Elixir* book's chapter on metaprogramming
+* https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---macros
+* https://github.com/JamesLavin/my_tech_resources/blob/master/Elixir.markdown#elixir---metaprogramming
+
+## decompile (Michał Muskała)
+
+![decompile_1](images/decompile_1.png)
+![decompile_2](images/decompile_2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+mix decompile Elixir.SiliconBrainWeb.Router --to expanded
+```
+
+routes.ex: 118 lines, including comments:
+![118 lines in ex file](images/routes_ex_118_lines.png)
+*compiled* routes.ex file: 2,180 lines:
+![2,180 lines in ex file](images/routes_ex_compiled_2180_lines.png)
+consumed.ex: 711 lines, including comments, docs, and examples:
+![711 lines in ex file](images/consumed_ex_711_lines.png)
+*compiled* consumed.ex: 1,463 lines:
+![1,463 lines in ex file](images/consumed_ex_compiled_1463_lines.png)
+
+## Simple macro example
+
+```elixir
+defmodule UnlessTrue do
+  defmacro unless(boolean_exp, do: false_case) do
+    quote do
+      if !unquote(boolean_exp), do: unquote(false_case)
+    end
+  end
+end
+```
+
+![obviously_true_ex.png](images/obviously_true_ex.png)
+![Elixir.ObviouslyTrue_ex.png](images/Elixir.ObviouslyTrue_ex.png)
+![possibly_true_ex.png](images/possibly_true_ex.png)
+![Elixir.PossiblyTrue_ex.png](images/Elixir.PossiblyTrue_ex.png)
+![possibly_true_execute.png](images/possibly_true_execute.png)
+
+## Examples from Elixir's Kernel module (slightly simplifed)
+
+```elixir
+Kernel.__info__(:macros)
+```
+
+```elixir
+Kernel.SpecialForms.__info__(:macros)
+```
+
+```elixir
+Elixir.Kernel == :"Elixir.Kernel" &&
+  Kernel == Elixir.Kernel
+```
+
+```
+defmacro !value do
+
+  quote do
+
+    case unquote(value) do
+      x when :"Elixir.Kernel".in(x, [false, nil]) -> true
+      _ -> false
+    end
+    
+  end
+
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+defmacro !{:!, _, [value]} do
+
+  quote do
+
+    case unquote(value) do
+      x when :"Elixir.Kernel".in(x, [false, nil]) -> false
+      _ -> true
+    end
+    
+  end
+
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+defmacro if(condition, clauses) do  # clauses is a keyword list, e.g. [do: ..., else: ...]
+  build_if(condition, clauses)
+end
+
+defp build_if(condition, do: do_clause) do
+  build_if(condition, do: do_clause, else: nil)
+end
+
+defp build_if(condition, do: do_clause, else: else_clause) do
+  quote do
+    case unquote(condition) do
+      x when :"Elixir.Kernel".in(x, [false, nil]) -> unquote(else_clause)
+      _ -> unquote(do_clause)
+    end
+  end
+end
+```
+
+## AST literals
+
+```elixir
+33 == quote do: 33
+```
+
+```elixir
+"thirty-three" == quote do: "thirty-three"
+```
+
+```elixir
+:thirty_three == quote do: :thirty_three
+```
+
+```elixir
+[33, 29, 11] == quote do: [33, 29, 11]
+```
+
+```elixir
+{:ok, 33} == quote do: {:ok, 33}
+```
+
+## Some Elixir types that aren't passed through to AST unmodified
+
+```elixir
+quote do: %{cat: "bad", dog: "good"}
+```
+
+```elixir
+# tuples with > 2 elements
+quote do: {1, 2, 3}
+```
+
+```elixir
+quote do: x
+```
+
+```elixir
+quote do: Pizza
+```
+
+```elixir
+quote do: Food.Pizza
+```
+
+```elixir
+quote do
+  defmodule Food.Cake do
+  end
+end
+```
+
+```elixir
+quote do
+  def my_fun do
+    7
+  end
+end
+```
+
+```elixir
+quote do: true and false
+```
+
+```elixir
+quote do: !true
+```
+
+```elixir
+quote do: x in [1, 2]
+```
+
+```elixir
+x = 8
+quote do: x in [1, 2]
+```
+
+```elixir
+x = 8
+
+quote do
+  x in [1, 2]
+end
+|> Code.eval_quoted(x: 2)
+```
+
+```elixir
+# macro hygiene: No pollution of namespaces/environments/contexts
+
+# unquote/1 allows reaching outside the AST's scope
+
+x = 8
+
+quote do
+  unquote(x) in [1, 2]
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+# macro hygiene: No pollution of namespaces/environments/contexts
+
+# Kernel.var!/2 "marks that a variable should not be hygienized"
+
+# @spec eval_quoted(Macro.t(), binding(), Macro.Env.t() | keyword())
+#   :: {term(), binding()}
+
+x = 8
+
+quote do
+  var!(x) in [1, 2]
+end
+|> Code.eval_quoted(x: 2)
+```
+
+```elixir
+# special atom: Module name
+
+defmodule SampleModule do
+end
+
+SampleModule == :"Elixir.SampleModule"
+
+quote do: SampleModule
+```
+
+```elixir
+:"Elixir.SampleModule"
+```
+
+```elixir
+quote(do: if(true, do: 1, else: 0))
+|> Macro.expand(__ENV__)
+```
+
+```elixir
+quote do
+  defmodule MyMod do
+    def my_fun do
+      7
+    end
+  end
+end
+|> Macro.expand(__ENV__)
+```
+
+## Why aren't 2-element tuples modified?
+
+Keeping 2-element tuples unchanged in their AST representations makes keyword lists much easier to read:
+
+```elixir
+quote do: [{:red_sox, :good}, {:yankees, :evil}]
+```
+
+```elixir
+quote do: [red_sox: :good, yankees: :evil]
+```
+
+The above is much cleaner AST than this:
+
+```elixir
+quote do: [{:red_sox, :good, :fenway_park}, {:yankees, :evil, :yankees_stadium}]
+```
+
+## Code.eval_quoted(quoted, binding, opts)
+
+```elixir
+quote(do: 17 + 18) |> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  17 + 18
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+## Code.string_to_quoted/2
+
+Code.string_to_quoted/2 converts a string into AST (the "abstract syntax tree" representation of that same Elixir code).
+
+The string representation "17" converts into the INTEGER 17, not the STRING "17":
+
+```elixir
+"17" |> Code.string_to_quoted()
+```
+
+```elixir
+"17" |> Code.string_to_quoted() |> elem(1)
+```
+
+To represent the STRING "17" within a string, we must either pass it into `Integer.to_string()` or wrap it within (escaped) quotation marks:
+
+```elixir
+"17 |> Integer.to_string()" |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+"17 |> Integer.to_string()"
+|> Code.string_to_quoted()
+|> elem(1)
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+```elixir
+"\"17\"" |> Code.string_to_quoted() |> elem(1)
+```
+
+## Macro.to_string()
+
+We can REVERSE the operation `Code.string_to_quoted()` using `Macro.to_string()`:
+
+```elixir
+"17 |> Integer.to_string()"
+|> Code.string_to_quoted()
+|> elem(1)
+|> Macro.to_string()
+```
+
+```elixir
+"\"17\""
+|> Code.string_to_quoted()
+|> elem(1)
+|> Macro.to_string()
+```
+
+## quote(opts, block)
+
+You can transform Elixir code into its AST representation using `quote()`, (i.e., `Kernel.SpecialForms.quote(opts, block)`):
+
+```elixir
+quote do: 3 + 4
+```
+
+```elixir
+quote(do: 3 + 4) |> Macro.to_string()
+```
+
+```elixir
+quote(do: 3 + 4) |> Macro.to_string() |> Code.string_to_quoted!()
+```
+
+Metaprogramming is writing code that creates other code.
+
+`quote/2` transforms Elixir code into an Elixir AST (abstract syntax tree).
+
+Manipulating Elixir AST lets us interact with the code-generation process in a manner impossible in most languages.
+
+For example, `Logger` can inspect code at compilation time and completely remove debugging code intended only to run in `dev` mode or above a certain log level.
+
+Another example: we can use macros to create DSLs (domain-specific languages), as `Ecto` and `Phoenix` do.
+
+We can also create new "language primitives 'missing' from Elixir," like `while`. Elixir primitives like `defmodule`, `def`, and `if` are all macros, not ordinary functions.
+
+```elixir
+quote do: 17 + 18
+```
+
+Structure of this 3-element tuple:
+`{function call, context, [arguments]}`
+
+All AST expressions have this shape
+
+<!-- livebook:{"break_markdown":true} -->
+
+`17 + 18` is syntactic sugar for `Kernel.*(17,18)`, which is why the AST has `:*` as the function, `[context: Elixir, import: Kernel]` as the context, and `[17, 18]` as arguments
+
+```elixir
+quote do: 7 + 8
+```
+
+```elixir
+quote do
+  7 + 8
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+## (Aside) Weird display of charlists (character lists)
+
+```elixir
+[67, 97, 116]
+```
+
+```elixir
+[67, 97, 116] |> is_list()
+```
+
+```elixir
+[67, 97, 116] |> List.Chars.to_charlist()
+```
+
+```elixir
+[67, 97, 116] |> List.to_string()
+```
+
+```elixir
+# See https://elixir-lang.org/getting-started/binaries-strings-and-char-lists.html#charlists
+# for why this is so weird
+
+# Erlang & Elixir try to help us by displaying lists of numbers as characters
+# whenever possible, even if we intend the numbers to just be numbers.
+
+# Character lists != Strings
+
+{?\a, ?\b, ?\r, ?\s, ?a, ?b, ?c, ?A, ?B, ?C}
+```
+
+```elixir
+[7, 8] |> List.Chars.to_charlist()
+```
+
+```elixir
+'\a\b' == [7, 8]
+```
+
+```elixir
+# Character lists != Strings
+
+'\a\b' != "\a\b"
+```
+
+```elixir
+{:+, [context: Elixir, import: Kernel], [7, 8]} ==
+  {:+, [context: Elixir, import: Kernel], '\a\b'}
+```
+
+```elixir
+quote do: [1000, 1001, 1002]
+```
+
+```elixir
+{?P, ?i, ?z, ?z, ?a}
+```
+
+```elixir
+quote do: [80, 105, 122, 122, 97]
+```
+
+```elixir
+[?P, ?i, ?z, ?z, ?a] |> List.to_string()
+```
+
+```elixir
+'efg' == [101, 102, 103]
+```
+
+```elixir
+# character list (from Erlang) != string (from Elixir)
+'efg' != "efg"
+```
+
+```elixir
+"efg" |> IEx.Info.info()
+```
+
+```elixir
+'efg' |> IEx.Info.info()
+```
+
+```elixir
+[1000, 1001, 1002] |> IEx.Info.info()
+```
+
+## unquote_splicing/1
+
+```elixir
+z = [4, 5, 6]
+quote do: [1, 2, 3, unquote(z), 7, 8]
+```
+
+```elixir
+z = [4, 5, 6]
+quote do: [1, 2, 3, unquote_splicing(z), 7, 8]
+```
+
+## Macro.to_string()
+
+```elixir
+quote do: 17 + 18
+```
+
+```elixir
+quote(do: 17 + 18)
+|> Macro.to_string()
+```
+
+```elixir
+quote do
+  [1, 2, 3]
+  |> Enum.map(&(&1 + 1))
+end
+```
+
+```elixir
+quote do
+  [1, 2, 3]
+  |> Enum.map(&(&1 + 1))
+end
+|> Macro.to_string()
+```
+
+```elixir
+# The above represented a calculation without triggering the actual calculation.
+# This is "lazy evaluation."
+# The code for the calculation need not even be calculatable at compile time:
+quote do
+  [user_input_a, user_input_b, user_input_c]
+  |> Enum.map(&(&1 + 1))
+end
+|> Macro.to_string()
+```
+
+```elixir
+quote do: x * y * z
+```
+
+```elixir
+quote(do: x * y * z)
+|> Macro.to_string()
+```
+
+## Deeply nested AST
+
+```elixir
+quote do
+  1 + 2 + 3 + 4 + 5 + 6
+end
+|> IO.inspect()
+```
+
+An Elixir program in its AST representation is a large (but structurally simple) tree of nested 3-element tuples
+
+## Variables & macro hygeine
+
+```elixir
+quote do
+  x
+end
+```
+
+Whatever happened outside `quote` is invisible inside `quote`
+
+```elixir
+x = 3
+
+quote do
+  x
+end
+```
+
+To explicitly pull values from outside `quote` into it (at compile time), you can use `unquote/1`:
+
+```elixir
+x = 3
+
+quote do
+  unquote(x)
+end
+```
+
+```elixir
+y = 7
+quote do: unquote(y)
+```
+
+To explicitly pull values from outside `quote` into it from its variable bindings at runtime, you can use `var!/1`.
+
+Here I'm also passing in an optional keyword list for use only when evaluating this particular quoted expression:
+
+```elixir
+Code.eval_quoted(
+  quote do
+    var!(x)
+  end,
+  x: 17
+)
+```
+
+The above has NOT changed the value of `x` outside of the quoted expression:
+
+```elixir
+x
+```
+
+The following grabs the values of `x` and `y` at compilation but does not run the calculation defined in the AST returned by `quote`:
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  unquote(x) + unquote(y)
+end
+```
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  unquote(x) + unquote(y)
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+```elixir
+x = 3
+y = 4
+
+quote do
+  x = unquote(x)
+  y = unquote(y)
+  x = x * x
+  y = y * y
+  x + y
+end
+|> Code.eval_quoted()
+|> elem(0)
+```
+
+What happens inside `quote` stays inside `quote`.
+
+`x` and `y` are still `3` and `4`, not `9` and `16`
+
+```elixir
+%{x: x, y: y}
+```
+
+## Break macro hygiene at runtime with var!/1
+
+If you *want* your macro to modify a variable's value outside the macro, you can do so by assigning to `var!(x)`:
+
+```elixir
+x = 3
+y = 4
+
+defmodule MyMultiply do
+  defmacro mult(x, y) do
+    quote do
+      var!(x) = unquote(x) * unquote(x)
+      var!(y) = unquote(y) * unquote(y)
+      var!(x) + var!(y)
+    end
+  end
+end
+```
+
+The return value is still 25:
+
+```elixir
+require MyMultiply
+
+MyMultiply.mult(x, y)
+|> Code.eval_quoted()
+```
+
+But we have now permanently changed the values bound to the variables `x` and `y` in the scope outside the macro:
+
+```elixir
+%{x: x, y: y}
+```
+
+## Use bind_quoted instead of quote
+
+In the above example, we called `unquote(x)` twice and `unquote(y)` twice.
+
+This is a bad practice. One reason why is inefficiency. More importantly, if the parameter passed into `unquote/1` is an impure function, you will be evaluating it multiple times.
+
+This would be highly inefficient if the expression were, say, a database lookup.
+
+It could be disastrous if the expression included a side effect like `fire_the_missiles()`!
+
+<!-- livebook:{"break_markdown":true} -->
+
+The preferred way to bind variables is using `bind_quoted`.
+
+We can (and should) rewrite the module above as follows:
+
+```elixir
+x = 3
+y = 4
+
+defmodule MyMultiply2 do
+  defmacro mult(x, y) do
+    quote bind_quoted: [x: x, y: y] do
+      var!(x) = x * x
+      var!(y) = y * y
+      var!(x) + var!(y)
+    end
+  end
+end
+```
+
+```elixir
+require MyMultiply2
+
+MyMultiply2.mult(x, y)
+|> Code.eval_quoted()
+```
+
+Because we chose to assign `x * x` to `var!(x)`, rather than to `x` and `y * y` to `var!(y)`, rather than to `y`, we permanently modified these values outside the context of the macro. We could easily avoid `var!/1` to preserve macro hygeine.
+
+```elixir
+%{x: x, y: y}
+```
+
+## Macro.escape for values
+
+```elixir
+quote do
+  {:a, :b, :c}
+end
+```
+
+```elixir
+this_val = {:a, :b, :c}
+
+quote do
+  this_val
+end
+```
+
+```elixir
+# Macro.escape() tranforms Elixir values --> AST values
+
+this_val |> Macro.escape()
+```
+
+```elixir
+this_val_ast = this_val |> Macro.escape()
+
+quote do
+  unquote(this_val_ast)
+end
+```
+
+```elixir
+# This fails to compile because a 3-tuple is not valid AST:
+
+# defmodule BestTeam do
+#   tuple = {:man_city, :haaland, :guardiola}
+#   def football do
+#     unquote(tuple)
+#   end
+# end
+```
+
+```elixir
+defmodule BestTeam do
+  tuple = {:man_city, :haaland, :guardiola}
+  tuple_ast = tuple |> Macro.escape()
+
+  def football do
+    unquote(tuple_ast)
+  end
+end
+
+BestTeam.football()
+```
+
+```elixir
+defmodule Human do
+  @enforce_keys [:name, :age]
+  defstruct name: nil, age: 0
+  @type t :: %__MODULE__{name: String.t(), age: non_neg_integer}
+end
+```
+
+```elixir
+mary = %Human{name: "Mary", age: 28}
+```
+
+```elixir
+IO.inspect(mary, structs: false)
+```
+
+```elixir
+quote do
+  %Human{name: "Mary", age: 28}
+end
+```
+
+```elixir
+quote do
+  mary
+end
+```
+
+```elixir
+mary |> Macro.escape()
+```
+
+```elixir
+quote do
+  %{__struct__: Human, age: 28, name: "Mary"}
+end
+```
+
+```elixir
+escaped = mary |> Macro.escape()
+
+quote do
+  unquote(escaped)
+end
+```
+
+```
+defmacro is_struct(term) do
+  quote do
+    is_map(unquote(term)) and
+      :erlang.is_map_key(:__struct__, unquote(term)) and
+      is_atom(:erlang.map_get(:__struct__, unquote(term)))
+  end
+end
+```
+
+```elixir
+# ELIXIR CODE
+
+# %{__struct__: Human, age: 28, name: "Mary"}
+term = %Human{age: 28, name: "Mary"}
+
+is_map(term) and
+  :erlang.is_map_key(:__struct__, term) and
+  is_atom(:erlang.map_get(:__struct__, term))
+```
+
+```elixir
+# AST (ABSTRACT SYNTAX TREE)
+
+term_as_ast =
+  {:%{}, [], [__struct__: {:__aliases__, [alias: false], [:Human]}, age: 28, name: "Mary"]}
+
+quoted =
+  quote do
+    is_map(unquote(term_as_ast)) and
+      :erlang.is_map_key(:__struct__, unquote(term_as_ast)) and
+      is_atom(:erlang.map_get(:__struct__, unquote(term_as_ast)))
+  end
+
+quoted |> Code.eval_quoted()
+```
+
+```elixir
+%{a: 1}
+|> Map.update!(:a, &(&1 + 2))
+|> tap(&IO.inspect(&1.a))
+|> Map.update!(:a, &(&1 * 2))
+```
+
+```
+  defmacro tap(value, fun) do
+    quote bind_quoted: [fun: fun, value: value] do
+      _ = fun.(value)
+      value
+    end
+  end
+```
+
+```elixir
+defmodule FooBar do
+  kv = [foo: 1, bar: 2]
+
+  Enum.each(kv, fn {k, v} ->
+    def unquote(k)(), do: unquote(v)
+  end)
+end
+```
+
+```elixir
+FooBar.foo() + FooBar.bar()
+```
+
+```elixir
+defmodule FooBar2 do
+  kv = [foo: 1, bar: 2]
+
+  Enum.each(kv, fn {k, v} ->
+    def unquote(k)(extra \\ 0), do: unquote(v) + extra
+  end)
+end
+```
+
+```elixir
+FooBar2.foo() + FooBar2.bar()
+```
+
+```elixir
+FooBar2.foo(2) + FooBar2.bar(-4)
+```
+
+## What is a metaprogramming... and why should I care?
+
+### Why learn metaprogramming?
+
+* **Understand Elixir** itself, most of which is created using Elixir macros
+  * Examples: `def`, `defmodule`, `if`, `unless`, etc.
+  * Even `defmacro` is defined using `defmacro`! (Don't ask me how!)
+* **Extend the Elixir syntax** with declarative functions that keep your code clean/sparse
+  * Example: `then` was only recently added, but you could have added it long ago
+* **Debug with greater confidence**
+  * When debugging, we'll often wander into macros and other metaprogramming. The more familiar you are with these techniques, the better equipped you'll be to debug your problem.
+* **Create functions dynamically**, perhaps from data in a file
+  * Example: functions to generate Unicode functions (e.g., capitalize) dynamically from  Unicode file
+* **Create your own DSLs** (domain-specific languages):
+  * Phoenix
+  * Ecto
+  * HEEX templates, Surface
+  * https://rdf-elixir.dev/
+  * https://github.com/Revmaker/gremlex
+* **Create reusable compile-time code** by extracting code you wish to `use` in multiple modules into a code block dynamically injectable via the `defmacro __using__(opts)` macro
+* **Optimize your code**:
+  * The compiler can simplify or optimize your code based on opts passed in at compliation time
+    * If you specify a log level of `:warning`, `Logger.warning` calls will be compiled into your code, but `Logger.info` calls will not
+
+## Compilation-time code generation from external files
+
+See Chris McCord's "Metaprogramming Elixir" book, pages 43-58, for additional explanation.
+
+UnicodeData.txt:
+![UnicodeData.txt](images/UnicodeData.txt.png)
+
+Unicode.ex generates String.Unicode:
+![unicode_ex.png](images/unicode_ex.png)
+
+String.Unicode constituted from functions generated from .txt files:
+![String.Unicode.png](images/String.Unicode.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![@external_resource](images/external_resource.png)
+
+See Chris McCord's "Metaprogramming Elixir" pp. 48-49 for more.
+
+## Compilation-time code generation from API responses
+
+In Chris McCord's "Metaprogramming Elixir" book, pages 59-61, he shows a 20-line module that dynamically creates an Elixir function for displaying all Github repos owned by a user and dynamically creates two functions per repo, one for displaying all details of the repo and the other for opening the repo in your browser.
+
+## Compilation-time code elimination
+
+![logger_0](images/logger_0.png)
+![logger_1](images/logger_1.png)
+![logger_2](images/logger_2.png)
+![maybe_log](images/maybe_log.png)
+![logger_3](images/logger_3.png)
+
+## Before invoking a macro, you must `require` it
+
+![require](images/require.png)![require](images/require.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Metaprogramming Costs
+
+* Introduces an additional layer of **indirection/abstraction**
+* **Harder to debug** code
+* **Harder to understand** code
+* **Requires thinking about both compilation-time code execution and runtime-code execution**
+
+## Jay Hayes - Elixir in Elixir
+
+https://www.youtube.com/watch?v=p8MGNw045AE
+
+```elixir
+quote do
+  :lol = :wat
+end
+```
+
+```elixir
+quote do
+  :lol = :wat
+end == {:=, [], [:lol, :wat]}
+```
+
+```elixir
+:lol = :wat
+```
+
+![bad_match](images/bad_match.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![match_error](images/match_error.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Expression.match?](images/expression_match.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Expression.match? 2](images/expression_match_2.png)
+
+```elixir
+num = 42
+quote do: 1 + num
+```
+
+```elixir
+num = 42
+quote do: 1 + unquote(num)
+```
+
+```elixir
+quote do
+  1 + unquote(num)
+end
+|> Code.eval_quoted()
+```
+
+![:elixir_module.compile](images/elixir_module_compile.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![:elixir_module.compile 2](images/elixir_module_compile_2.png)
+
+## Tyler Pachal - Metaprogramming for Dummies
+
+https://www.youtube.com/watch?v=DFa1bC95wxA
+
+<!-- livebook:{"break_markdown":true} -->
+
+![tyler_1](images/tyler_1.png)
+![tyler_2](images/tyler_2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![decompile_3](images/decompile_3.png)
+![decompile_4](images/decompile_4.png)
+
+## Sasha Fondeca - Metaprogramming With Elixir
+
+https://www.youtube.com/watch?v=uBWFBU97Qkw
+
+<!-- livebook:{"break_markdown":true} -->
+
+![pixels_1](images/pixels_1.png)
+![pixels_2](images/pixels_2.png)
+![pixels_3](images/pixels_3.png)
+![pixels_4](images/pixels_4.png)
+![pixels_5](images/pixels_5.png)
+
+## Marlus Saraiva - Surface, HEEX and the Power of Choice
+
+https://www.youtube.com/watch?v=ChGSLUVe5Gs
+
+<!-- livebook:{"break_markdown":true} -->
+
+![macro components](images/macro_components.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+Benefits of LiveView Surface's Macro Components:
+
+* Extensibility via compile-time AST manipulation
+* Static evaluation of body/content (warn about errors, etc.)
+* Can embed other languages
+* Performance optimizations
+
+<!-- livebook:{"break_markdown":true} -->
+
+![for vs. for](images/for_vs_for.png)
+
+## Qing Wu: A Gentle Introduction to Elixir Macros
+
+https://www.youtube.com/watch?v=CHHQ_xzv4pw (doesn't indicate the speaker's name)
+https://www.youtube.com/watch?v=X8QfT7BNE44 is from Qing Wu, who I believe is the same presenter)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![gentle intro](images/gentle_intro_to_macros.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![simple timer](images/simple_timer.png)
+
+## Billy Ceskavich: Is Elixir Just Lisp?
+
+https://www.youtube.com/watch?v=F7qaIqcaTDc
+
+<!-- livebook:{"break_markdown":true} -->
+
+![Billy defmacro](images/billy_defmacro2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![def is a macro](images/def_is_a_macro.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![defmacro def](images/defmacro_def.png)
+
+## Bryan Weber: Code Generation in Elixir
+
+https://www.youtube.com/watch?v=-mgwW3RVI50
+
+<!-- livebook:{"break_markdown":true} -->
+
+![code gen mix](images/code_gen_mix.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![macros code tradeoffs](images/macros_code_tradeoffs.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![defmodule unquote](images/defmodule_unquote.png)
+
+```elixir
+# Code.compile_quoted(quoted_code)
+
+# File.write(...)
+```
+
+## Code compilation process
+
+![compilation](images/compilation.png)
+
+## Jesse Anderson: Don't Write Macros But Do Learn How They Work
+
+* https://www.youtube.com/watch?v=Bo48sQDb-hk
+
+<!-- livebook:{"break_markdown":true} -->
+
+![jesse_1](images/jesse_1.png)
+![compilation process](images/compilation_process.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![literals & tuples](images/literals_and_tuples.png)
+![jesse 2](images/jesse_2.png)
+![jesse 3](images/jesse_3.png)
+
+```elixir
+if_ast = quote do: if(var!(x) == var!(y), do: "yeah", else: "nah")
+```
+
+```elixir
+if_ast |> Macro.to_string() |> IO.puts()
+```
+
+```elixir
+if_ast |> Code.eval_quoted(x: 7, y: 9)
+```
+
+```elixir
+if_ast |> Code.eval_quoted(x: 19, y: 19)
+```
+
+## Andrew Summers - Domain Specific Languages and Metaprogramming in Elixir
+
+![Andrew David Summers](images/Andrew_David_Summers.png)
+![andrew_summers_0](images/andrew_summers_0.png)
+![andrew_summers_1](images/andrew_summers_1.png)
+![andrew_summers_2](images/andrew_summers_2.png)
+![andrew_summers_3](images/andrew_summers_3.png)
+![andrew_summers_4](images/andrew_summers_4.png)
+![andrew_summers_5](images/andrew_summers_5.png)
+![andrew_summers_6](images/andrew_summers_6.png)
+![andrew_summers_7](images/andrew_summers_7.png)
+![andrew_summers_8](images/andrew_summers_8.png)
+![andrew_summers_9](images/andrew_summers_9.png)
+![andrew_summers_10](images/andrew_summers_10.png)
+![andrew_summers_11](images/andrew_summers_11.png)
+
+## Let's Play With Metaprogramming!
+
+```elixir
+# runtime evaluation
+
+r = 2
+:math.pi() * :math.pow(r, 2)
+```
+
+```elixir
+# ordinary function created at compile time
+
+defmodule Area do
+  def circle(radius) do
+    :math.pi() * :math.pow(radius, 2)
+  end
+end
+
+# runtime evaluation
+
+Area.circle(2)
+```
+
+```elixir
+# Macro function
+
+defmodule AreaMacro do
+  require Logger
+
+  defmacro circle(radius) do
+    Logger.info("compiling...")
+
+    quote do
+      :math.pi() * :math.pow(unquote(radius), 2)
+    end
+  end
+end
+
+# runtime evaluation
+
+require AreaMacro
+# x = 3
+# {AreaMacro.circle(2), AreaMacro.circle(x)}
+AreaMacro.circle(2)
+```
+
+## use && __using__/1
+
+```elixir
+defmodule AreaMacro2 do
+  defmacro __using__(opts) do
+    case opts do
+      :circle ->
+        quote location: :keep, bind_quoted: [opts: opts] do
+          def area(radius) do
+            :math.pi() * :math.pow(radius, 2)
+          end
+        end
+
+      :square ->
+        quote location: :keep, bind_quoted: [opts: opts] do
+          def area(side) do
+            :math.pow(side, 2)
+          end
+        end
+
+      other when is_binary(other) ->
+        quote location: :keep, bind_quoted: [opts: opts] do
+          other = other |> String.to_atom()
+          IO.inspect("Do not recognize shape #{other}")
+        end
+    end
+  end
+end
+
+defmodule Circle do
+  use AreaMacro2, :circle
+end
+
+defmodule Square do
+  use AreaMacro2, :square
+end
+
+# runtime evaluation
+
+{Circle.area(2), Square.area(2)}
+```
+
+On p. 99 of "Metaprogramming Elixir," Chris tells us to avoid using `use` just for mix-ins.
+
+`alias` or `import` is fine for just pulling in functions to DRY up your code. Or you can just call functions using their fully qualified names.
+
+```elixir
+Circle
+```
+
+```elixir
+# runtime evaluation
+
+if 1 + 2 == 3, do: "this", else: "that"
+```
+
+```elixir
+# runtime evaluation
+
+if 1 + 2 == 3 do
+  "this"
+else
+  "that"
+end
+```
+
+```elixir
+# runtime evaluation
+
+if(Kernel.==(Kernel.+(1, 2), 3), [{:do, "this"}, {:else, "that"}])
+```
+
+```elixir
+# compile without evaluation
+
+quote do
+  if(1 + 2 == 3, do: "this", else: "that")
+end
+```
+
+```elixir
+# compile, then evaluate
+
+quote do
+  if(1 + 2 == 3, do: "this", else: "that")
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+one = 1
+two = 2
+three = 3
+if(one + two == three, do: "this", else: "that")
+```
+
+```elixir
+quote do
+  if(one + two == three, do: "this", else: "that")
+end
+```
+
+```elixir
+quote do
+  if(var!(one) + var!(two) == var!(three), do: "this", else: "that")
+end
+|> Code.eval_quoted(one: 1, two: 2, three: 3)
+```
+
+```elixir
+quote do
+  if(var!(one) + var!(two) == var!(three), do: "this", else: "that")
+end
+|> Code.eval_quoted(one: 1, two: 2, three: 4)
+```
+
+```elixir
+quote do
+  if(one + two == three, do: "this", else: "that")
+end
+```
+
+![Star Wars MadLibs](images/star_wars_madlibs.jpeg)
+
+```elixir
+# Fails with ** (CompileError) nofile:1: undefined variable "three"
+
+# quote do if(var!(one) + var!(two) == var!(three), do: "this", else: "that") end
+# |> Code.eval_quoted([one: 1, two: 2])
+```
+
+```elixir
+madlib =
+  quote do
+  end
+```
+
+![plus](images/plus.png)
+
+## Macro.postwalk() ...and Macro.prewalk()
+
+This is a MUCH simplified version of just one part of Argentinian Lucas San Román's 3-part series at https://dorgan.netlify.app/posts/2021/04/the_elixir_ast/. I recommend the whole series to you!
+
+```elixir
+filepath =
+  "/Users/jameslavin/Git/ElixirZone/Elixir/LiveBooks/Elixir_104_Metaprogramming/AreaMacro2.ex"
+
+areamacro2_ast =
+  filepath
+  |> Path.expand()
+  |> File.read!()
+  |> Code.string_to_quoted!(columns: true)
+```
+
+```elixir
+defmodule Checker do
+  @warning "You can create only a finite number of atoms. You should not be generating them dynamically from strings."
+
+  def check(ast) do
+    {_ast, issues} = Macro.postwalk(ast, [], &handle_node/2)
+    issues
+  end
+
+  defp handle_node({{:., _, [{:__aliases__, _, [:String]}, :to_atom]}, meta, _args} = node, acc) do
+    issue = %{
+      warning: @warning,
+      line: meta[:line],
+      column: meta[:column]
+    }
+
+    {node, [issue | acc]}
+  end
+
+  defp handle_node(node, acc), do: {node, acc}
+end
+
+areamacro2_ast |> Checker.check()
+```
+
+`Macro.prewalk` and `Macro.postwalk` can be used not only to report on AST but to MODIFY AST, as the documentation explains:
+
+> Returns a new AST where each node is the result of invoking fun on each corresponding node of ast.
+> Example:
+> ![Macro.prewalk()](images/Macro.prewalk.png)
+
+## bind_quoted & execution context of unquote()
+
+The following is one small portion of Daniel Xu's excellent article, "The Minimum Knowledge You Need to Start Metaprogramming in Elixir," https://dockyard.com/blog/2016/08/16/the-minumum-knowledge-you-need-to-start-metaprogramming-in-elixir
+
+```elixir
+defmodule M do
+  defmacro my_macro(name) do
+    IO.puts(1)
+
+    quote do
+      IO.puts(4)
+      unquote(IO.puts(2))
+      IO.puts("hello, #{unquote(name)}")
+    end
+  end
+end
+
+defmodule Create do
+  import M
+
+  IO.puts(3)
+  my_macro("hello")
+end
+```
+
+```elixir
+defmodule M do
+  defmacro my_macro(name) do
+    IO.puts(1)
+
+    quote bind_quoted: [name: name] do
+      IO.puts(4)
+
+      def unquote(name)() do
+        unquote(IO.puts(2))
+        IO.puts("hello, #{unquote(name)}")
+      end
+    end
+  end
+end
+
+defmodule Create do
+  import M
+
+  IO.puts(3)
+  my_macro(:hello)
+end
+```
+
+```elixir
+defmodule M do
+  defmacro my_macro(name) do
+    IO.puts(1)
+
+    quote bind_quoted: [name: name] do
+      IO.puts(4)
+
+      def unquote(name)() do
+        unquote(IO.puts(2))
+        IO.puts("hello, #{unquote(name)}")
+      end
+    end
+  end
+end
+
+defmodule Create do
+  import M
+
+  IO.puts(3)
+
+  [:foo, :bar]
+  |> Enum.each(&my_macro(&1))
+end
+```
+
+```elixir
+{Create.foo(), Create.bar()}
+```
+
+## Macro.escape()
+
+```elixir
+long_tuple = {:x, :y, :z}
+
+inspect_long_tuple_ast = quote do: IO.inspect(unquote(long_tuple))
+```
+
+```elixir
+# throws an ArgumentError because {:x, :y, :z} is not valid AST
+
+# inspect_long_tuple_ast |> Code.eval_quoted()
+```
+
+```elixir
+long_tuple = {:x, :y, :z} |> Macro.escape()
+# returns {:{}, [], [:x, :y, :z]}
+
+inspect_long_tuple_ast = quote do: IO.inspect(unquote(long_tuple))
+
+inspect_long_tuple_ast |> Code.eval_quoted()
+```
+
+![inlining](images/inlining.png)
+
+```elixir
+&Kernel.+/2
+```
+
+```elixir
+quote do: 1 + 2
+```
+
+```elixir
+quote do
+  Kernel.+(1, 2)
+end
+```
+
+## Environments (__ENV__ & __CALLER__)
+
+```elixir
+IO.inspect(__ENV__, limit: :infinity, printable_limit: :infinity, structs: false)
+```
+
+## Why not just use functions?
+
+```elixir
+defmodule Our do
+  def if_fun(condition, do: this, else: that) do
+    if(condition) do
+      this
+    else
+      that
+    end
+  end
+end
+```
+
+![if macro](images/if_macro.png)
+
+```elixir
+Our.if_fun 1 == 1 do
+  IO.inspect("true")
+else
+  IO.inspect("false")
+end
+```
+
+```elixir
+Our.if_fun 1 == 3 do
+  IO.inspect("true")
+else
+  IO.inspect("false")
+end
+```
+
+Function args are always evaluated when the function gets called!
+
+To avoid that, we use macros, which receive AST, which represents unevaluatable data structures that have not (yet) been evaluated.
+
+## Nicholas J. Henry: https://www.youtube.com/watch?v=xj6yNzcGlEE
+
+* https://www.youtube.com/watch?v=xj6yNzcGlEE
+* https://www.youtube.com/watch?v=EFAgc7YqDP8
+
+<!-- livebook:{"break_markdown":true} -->
+
+![def vs defmacro](images/def_defmacro.png)
+
+## Adi Iyengar: https://www.youtube.com/watch?v=oikF1Ze2Vao
+
+* https://www.youtube.com/watch?v=oikF1Ze2Vao
+
+<!-- livebook:{"break_markdown":true} -->
+
+![quote as AST](images/quote_as_ast.png)
+
+## Lizzie Paquette: https://www.youtube.com/watch?v=55-X7rSw8M0
+
+https://www.youtube.com/watch?v=55-X7rSw8M0
+
+<!-- livebook:{"break_markdown":true} -->
+
+![code vs AST](images/code_vs_AST.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![contexts](images/contexts.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+* [Presentation video & slides](https://codesync.global/media/macros-in-elixir-responsible-code-generation-cbf20/)
+* [Slides (PDF)](https://codesync.global/uploads/media/activity_slides/0001/02/bf3cdf4f4c4c434fc7e97b103ccd9bceae93d76e.pdf)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![macro contexts](images/macro_contexts.png)
+
+```elixir
+defmodule MyMod do
+  defmacro who_am_i() do
+    IO.inspect(__MODULE__, label: "Macro Context")
+    IO.inspect(__CALLER__.module, label: "Caller Env")
+
+    quote do
+      IO.inspect(__MODULE__, label: "Caller Context")
+      IO.inspect(unquote(__MODULE__), label: "Value from Macro Context")
+    end
+  end
+end
+```
+
+```elixir
+defmodule MyCaller do
+  require MyMod
+  MyMod.who_am_i()
+end
+```
+
+## Dynamic function names (using "unquote fragments")
+
+For more on unquote fragments, see:
+
+* https://hexdocs.pm/elixir/1.14.0/Kernel.SpecialForms.html#quote/2
+* Chris McCord's "Metaprogramming Elixir" pp. 46-48
+
+```elixir
+defmodule TalkingHeads do
+  @funs [ask_yourself: "How did I get here?", no_party: "No disco!"]
+  # @funs [{:ask_yourself, "How did I get here?"}, {:no_party, "No disco!"}]
+
+  for {k, v} <- @funs do
+    def unquote(k)(answer), do: answer
+    def unquote(k)(), do: unquote(v)
+  end
+end
+```
+
+```elixir
+TalkingHeads.ask_yourself()
+```
+
+```elixir
+
+```
+
+```elixir
+TalkingHeads.no_party()
+```
+
+## quote/2 transforms Elixir code --> an AST ("abstract syntax tree") data structure
+
+```elixir
+# The input `1` is ordinary Elixir code. The output `1` is that value represented as AST
+quote do: 1
+```
+
+```elixir
+# Elixir -> AST
+# `sum(1,2)` has a different representation in AST than in Elixir code
+quote do: sum(1, 2)
+```
+
+```elixir
+# The AST this generates spells out -- in a nested data structure -- 
+#       the exact operations to be run.
+# This is a nested data structure representing operations to be run.
+# This runnable specification does NOT execute those operations.
+# In fact, this is not runnable as is because `sum` is not even defined.
+# Executing the AST this generates will require a definition for `sum/2`:
+quote do: sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
+```
+
+```elixir
+# The following cannot be evaluated because we have not provided a definition of `sum`
+quote do
+  sum(1, 2)
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+defmodule MyMath do
+  def sum(a, b), do: a + b
+end
+
+quote do
+  MyMath.sum(1, 2)
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  MyMath.sum(MyMath.sum(MyMath.sum(1, 3), MyMath.sum(2, 4)), MyMath.sum(5, 6))
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  import MyMath
+  sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
+end
+```
+
+```elixir
+quote do
+  import MyMath
+  sum(sum(sum(1, 3), sum(2, 4)), sum(5, 6))
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do
+  1 + 2
+end
+|> Code.eval_quoted()
+```
+
+```elixir
+quote do: sum(1, 2) |> Code.eval_quoted()
+```
+
+```elixir
+quote do: random_variable_name
+```
+
+```elixir
+random_variable_name = 7
+
+quote do: random_variable_name
+```
+
+```elixir
+random_variable_name = 9
+
+quote do: unquote(random_variable_name)
+```
+
+```elixir
+# AST cannot be further converted
+{:sum, [], [1, 2]}
+```
+
+```elixir
+# Elixir -> AST -> String
+quote do
+  sum(1, 2)
+end
+|> Macro.to_string()
+```
+
+```elixir
+# Using `quote do: ...`, you'll want to add parentheses or the compiler will likely
+# misinterpret your code
+quote(do: sum(1, 2))
+|> Macro.to_string()
+```
+
+```elixir
+# AST -> String
+{:sum, [], [1, 2]} |> Macro.to_string()
+```
+
+```elixir
+# AST -> String -> AST
+{:sum, [], [1, 2]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+{:%{}, [], [{:a, 1}, {:b, 2}]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+{:{}, [], [1, 2, 3, 4]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+{:{}, [], [1, 2]} |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+[1, 2, 3, 4, 5] |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+[{:a, 1}, {:b, 2}, {:c, 3}, {:d, 4}, {:e, 5}]
+|> Macro.to_string()
+|> Code.string_to_quoted()
+|> elem(1)
+```
+
+```elixir
+# AST -> String -> AST
+[a: 1, b: 2, c: 3, d: 4, e: 5] |> Macro.to_string() |> Code.string_to_quoted() |> elem(1)
+```
+
+![Brex.Struct](images/brex.struct.png)
+
+```elixir
+fields = [
+  %{name: "id", type: "integer"},
+  %{name: "name", type: "String.t()"},
+  %{name: "status", type: "atom()"}
+]
+
+{:%{}, [], fields |> Enum.map(fn x -> {x.name, x.type} end)}
+```
+
+```elixir
+fields = [
+  %{name: "id", type: "integer"},
+  %{name: "name", type: "String.t()"},
+  %{name: "status", type: "atom()"}
+]
+
+{:%, [],
+ [{:__MODULE__, [], Elixir}, {:%{}, [], fields |> Enum.map(fn x -> {x.name, x.type} end)}]}
+|> Macro.to_string()
+```
+
+![mail](images/mail.png)
+
+## Understanding DSL "magic" (including Elixir itself)
+
+A blessing of powerful languages like Ruby and Elixir -- which provide users the ability to create domain-specific languages (DSLs) -- is that you can greatly simplify tasks via DSLs.
+
+But DSLs come with a curse... they add layers of indirection, which can make it harder to understand and debug code that uses those DSLs.
+
+DSLs are "magic." Magical spells are powerful but also dangerous.
+
+Given that much of Elixir is created using the "magic" of macros and metaprogramming, you can't fully understand Elixir, leverage its full power, or help extend it without understanding macros and metaprogramming.
+
+92% of Elixir was written in Elixir... via the magic of metaprogramming:
+
+![elixir is written in elixir](images/elixir_is_elixir.png)
+
+## Kernel.SpecialForms
+
+![SpecialForms](images/special_forms.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![case](images/case.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![case definition](images/case_definition.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+^^^ We have touched the metal / hit the event horizon, beyond which we cannot proceed.
+
+## Kernel.then/2
+
+![then](images/then.png)
+
+```elixir
+%{}
+|> then(&Map.put(&1, :baseball, "Red Sox"))
+|> then(&Map.put(&1, :football, "Patriots"))
+|> then(&Map.put(&1, :basketball, "Celtics"))
+|> then(&Map.put(&1, :hockey, "Bruins"))
+|> then(&Map.put(&1, :real_football, "Revolution"))
+```
+
+## Macro.expand_once/2
+
+![unless macro](images/unless3.png)
+
+```elixir
+# This is compiled and then immediately evaluated
+unless true, do: :a, else: :b
+```
+
+```elixir
+quote do
+  unless true, do: :a, else: :b
+end
+|> Macro.expand(__ENV__)
+```
+
+```elixir
+# This is compiled and then immediately evaluated, but it throws an error
+# because the variable `unset_value` has no value
+unless unset_value, do: "yay", else: "boo"
+```
+
+```elixir
+# This is transformed into AST but NOT immediately evaluated:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+```
+
+```elixir
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.to_string()
+|> String.split("\n")
+|> Enum.each(&IO.puts(&1))
+```
+
+```elixir
+# This is transformed into AST but NOT immediately evaluated,
+# but one round of "macro expansion" is applied:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.expand_once(__ENV__)
+```
+
+```elixir
+# We can see this more clearly:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.expand_once(__ENV__)
+|> Macro.to_string()
+|> String.split("\n")
+|> Enum.each(&IO.puts(&1))
+```
+
+```elixir
+# This is transformed into AST but NOT immediately evaluated,
+# but two rounds of "macro expansion" are applied:
+quote do
+  unless unset_value, do: :a, else: :b
+end
+|> Macro.expand_once(__ENV__)
+|> Macro.expand_once(__ENV__)
+|> Macro.to_string()
+|> String.split("\n")
+|> Enum.each(&IO.puts(&1))
+```
+
+## defmacro
+
+* `defmacro` takes its arguments in as AST, *not* as ordinary Elixir values
+* `unquote/1` (inside `quote do ... end`) transforms an AST argument into ordinary Elixir code by evaluating its current Elixir value, allowing you to pull in a value during code compilation (i.e., "at compile time") from the environment outside the `quote do ... end` block.
+* Everything inside the `quote do ... end` gets transformed from ordinary Elixir code into AST
+
+```elixir
+defmodule OurThen do
+  defmacro our_then(value, fun) do
+    fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
+    value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
+
+    quote do
+      # becomes (at compilation time below): (fn x -> x * 2 end).(1)
+      unquote(fun).(unquote(value))
+    end
+  end
+end
+```
+
+```elixir
+require OurThen
+
+1 |> OurThen.our_then(fn x -> x * 2 end)
+# becomes (at compilation time):
+# (fn x -> x * 2 end).(1)
+```
+
+## Kernel.tap/2
+
+![code for tap](images/tap.png)
+
+```elixir
+%{a: 1}
+|> tap(&IO.inspect(&1.a))
+|> Map.update!(:a, &(&1 + 100))
+```
+
+```elixir
+defmodule OurMod do
+  defmacro our_tap(value, fun) do
+    fun |> Macro.to_string() |> IO.inspect(label: "Compile time fun")
+    value |> Macro.to_string() |> IO.inspect(label: "Compile time value")
+
+    quote bind_quoted: [fun: fun, value: value] do
+      # after bind_quoted:
+      #   * `fun` will represent the uninvoked function itself
+      #   * `value` will be the evaluated value
+      _ = fun.(value)
+      value
+    end
+  end
+end
+```
+
+```elixir
+%{a: 1} |> Map.update!(:a, &(&1 * 20))
+```
+
+```elixir
+&IO.inspect(&1.a)
+```
+
+```elixir
+&List.first/1
+```
+
+```elixir
+quote do
+  &List.first/1
+end
+|> Macro.to_string()
+```
+
+```elixir
+require OurMod
+
+%{a: 1}
+|> Map.update!(:a, &(&1 * 20))
+|> OurMod.our_tap(&IO.inspect(&1.a))
+|> Map.update!(:a, &(&1 + 100))
+```
+
+## Kernel.SpecialForms
+
+In a previous episode, I wasn't clear on the difference between Kernel & Kernel.SpecialForms.
+
+I've since learned that macros in Kernel are expanded while macros in Kernel.SpecialForms are, well, special, and don't have documented implementations.
+
+Here's an example, the `for` comprehension. The documentation provides a LONG description and good examples:
+
+<!-- livebook:{"break_markdown":true} -->
+
+![for comprehension](images/for.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+The documentation is about 150 lines long, but here's the entire documented "implementation":
+
+![defmacro for](images/defmacro_for.png)
+
+It has a secret (?) implementation.
+
+## Macros
+
+Very heavily inspired by p. 6 of Chris McCord's "Metaprogramming Elixir"
+
+<!-- livebook:{"break_markdown":true} -->
+
+Chris writes "Rule 1: Don't Write Macros" because "macros can make programs difficult to debug and reason about."
+
+<!-- livebook:{"break_markdown":true} -->
+
+Macros receive AST and return AST. In other words, macros transform ASTs
+
+```elixir
+defmodule LogMath do
+  defmacro log({:+, ctx, [left_arg, right_arg]}) do
+    quote do
+      require Logger
+      left = unquote(left_arg)
+      right = unquote(right_arg)
+      Logger.debug("received '#{left} + #{right}'")
+      unquote(ctx) |> IO.inspect(label: "ctx")
+      left + right
+    end
+  end
+
+  defmacro log({op, ctx, args}) do
+    quote bind_quoted: [op: op, ctx: ctx, args: args] do
+      IO.inspect(op, label: "op")
+      IO.inspect(ctx, label: "ctx")
+      IO.inspect(args, label: "args")
+    end
+  end
+
+  defmacro log2({op, ctx, [left_arg, right_arg]}) when op in [:+, :-, :*, :/] do
+    quote bind_quoted: [op: op, left: left_arg, right: right_arg, ctx: ctx] do
+      require Logger
+      # left = unquote(left_arg)
+      # right = unquote(right_arg)
+      Logger.debug("received '#{left} #{op} #{right}'")
+      ctx |> IO.inspect(label: "ctx")
+      # unquote(op)(left, right)
+      {op, ctx, [left, right]} |> Code.eval_quoted() |> elem(0)
+    end
+  end
+
+  defmacro log2({op, ctx, args}) do
+    quote bind_quoted: [op: op, ctx: ctx, args: args] do
+      IO.inspect(op, label: "op")
+      IO.inspect(ctx, label: "ctx")
+      IO.inspect(args, label: "args")
+    end
+  end
+end
+```
+
+```elixir
+Kernel.+(3, 4)
+```
+
+When this code is compiled, `111 + 222` will be converted to AST -- `{:+, [context: Elixir, import: Kernel], [111, 222]}` -- and passed into `LogMath.log()`:
+
+```elixir
+require LogMath
+
+(111 + 222)
+|> LogMath.log()
+```
+
+```elixir
+(333 + 444)
+|> LogMath.log()
+```
+
+```elixir
+# I added second defmacro clause to debug why this wasn't working:
+quote do
+  555 + 444
+end
+|> LogMath.log()
+```
+
+```elixir
+quote do
+  Kernel.+(555, 444)
+end
+|> LogMath.log()
+
+# |> Macro.escape()
+```
+
+Why can't I pattern match against `[import: Kernel, context: Elixir]`???
+
+```elixir
+(666 - 555)
+|> LogMath.log2()
+```
+
+```elixir
+(666 / 3)
+|> LogMath.log2()
+```
+
+## Unless & navigating Elixir documentation
+
+![unless](images/unless.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![unless2](images/unless2.png)
+
+## Macros receive (and can pattern-match against) the AST representations of their arguments
+
+```elixir
+quote do: %{a: 1, b: 2}
+```
+
+```elixir
+defmodule MyMerge do
+  defmacro display({:%{}, [], _kwlist}) do
+    quote do
+      17
+    end
+  end
+
+  # defmacro merge(first, _second) do
+  #  quote do
+  #    unquote(first)
+  #  end
+  # end
+  defmacro merge({:%{}, [], first_kv_pairs}, {:%{}, [], second_kv_pairs}) do
+    quote do
+      first_map = unquote(first_kv_pairs) |> Enum.into(%{})
+      second_map = unquote(second_kv_pairs) |> Enum.into(%{})
+      Map.merge(first_map, second_map)
+    end
+  end
+end
+```
+
+```elixir
+require MyMerge
+
+MyMerge.display(%{})
+# (quote do: %{}) |> MyMerge.display()
+```
+
+```elixir
+require MyMerge
+
+first = quote do: %{a: 1, b: 2}
+
+second = quote do: %{c: 3, d: 4}
+
+MyMerge.merge(first, second)
+```
+
+## Module.create/3
+
+```elixir
+ast =
+  quote do
+    def answer_to_life, do: 42
+
+    def unladen_swallow_airspeed, do: "African or European?"
+  end
+
+Module.create(Culture, ast, Macro.Env.location(__ENV__))
+
+Culture.answer_to_life()
+```
+
+```elixir
+Culture.unladen_swallow_airspeed()
+```
+
+## use & __using__(opts)
+
+![use](images/use.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![use2](images/use2.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![use3](images/use3.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![use4](images/use4.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+![defoverridable](images/defoverridable.png)
+
+## register_attribute(..., accumulate: true) & @before_compile
+
+Source: Jia Hao Woo, https://blog.appsignal.com/2021/10/26/how-to-use-macros-in-elixir.html
+
+Chris McCord's "Metaprogramming Elixir" book has a very similar example on pages 39-42.
+
+Jia Hao Woo published four metaprogramming articles at: https://blog.appsignal.com/authors/jia-hao-woo
+
+<!-- livebook:{"break_markdown":true} -->
+
+![accumulate](images/accumulate.png)
+
+## Testing macros
+
+In "Metaprogramming Elixir" (page 69), Chris McCord advises you to test your generated code, not the macro code generation process directly.
+
+For more, you might find this talk useful:
+
+[Debugging Elixir Code - The Tools, The Mindset - Michal Buszkiewicz (ElixirConf EU 2021)](https://www.youtube.com/watch?v=x9OMlrrKYyE)
