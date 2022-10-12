@@ -906,7 +906,7 @@ MyMultiply2.mult(x, y)
 |> Code.eval_quoted()
 ```
 
-Because we chose to assign `x * x` to `var!(x)`, rather than to `x` and `y * y` to `var!(y)`, rather than to `y`, we permanently modified these values outside the context of the macro. We could easily avoid `var!/1` to preserve macro hygeine.
+Because we chose to assign `x * x` to `var!(x)`, rather than to `x` and `y * y` to `var!(y)`, rather than to `y`, we permanently modified these values outside the context of the macro. We could easily avoid `var!/1` to preserve macro hygiene.
 
 ```elixir
 %{x: x, y: y}
